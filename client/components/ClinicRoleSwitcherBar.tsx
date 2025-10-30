@@ -29,11 +29,6 @@ export function ClinicRoleSwitcherBar({
   const [isLoadingClinics, setIsLoadingClinics] = useState(true);
   const [isLoadingStaff, setIsLoadingStaff] = useState(false);
 
-  // Check if user is clinic owner/manager
-  const isClinicManager = 
-    hasRole(UserRole.DENTIST) || 
-    hasRole(UserRole.PLATFORM_ADMIN);
-
   // Load clinics on mount
   useEffect(() => {
     const loadClinics = async () => {
@@ -119,59 +114,62 @@ export function ClinicRoleSwitcherBar({
   const selectedClinicObj = clinics.find((c) => c.id === selectedClinic);
   const selectedStaffObj = staffList.find((s) => s.id === selectedStaff);
 
+  // Check if user is platform admin or clinic manager
+  const isPlatformAdmin = hasRole(UserRole.PLATFORM_ADMIN);
+  const isClinicOwner = selectedStaffObj?.role === "manager";
+  const canSwitchClinic = isPlatformAdmin || isClinicOwner;
+
   if (variant === "compact") {
     return (
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 flex items-center gap-3" dir="rtl">
-        {/* Clinic Selection - Only for managers */}
-        {isClinicManager && (
+      <div className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground px-4 py-2.5 flex items-center gap-4 shadow-sm" dir="rtl">
+        {/* Clinic Section */}
+        {canSwitchClinic ? (
           <div className="flex items-center gap-2">
-            <Building2 className="w-4 h-4" />
+            <Building2 className="w-4 h-4 shrink-0" />
             <select
               value={selectedClinic}
               onChange={handleClinicChange}
               disabled={isLoadingClinics}
-              className="bg-blue-700 text-white text-sm rounded px-2 py-1 border border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              className="bg-primary-foreground/10 text-primary-foreground text-sm rounded-md px-2 py-1 border border-primary-foreground/20 focus:outline-none focus:ring-1 focus:ring-primary-foreground/30 min-w-[140px]"
             >
-              <option value="">اختر العيادة</option>
               {clinics.map((clinic) => (
-                <option key={clinic.id} value={clinic.id}>
+                <option key={clinic.id} value={clinic.id} className="bg-card text-foreground">
                   {clinic.nameAr || clinic.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-sm">
+            <Building2 className="w-4 h-4 shrink-0" />
+            <span className="font-medium">{selectedClinicObj?.nameAr || selectedClinicObj?.name}</span>
+          </div>
+        )}
+
+        {/* Staff Section - Only for admins and managers */}
+        {canSwitchClinic && (
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 shrink-0" />
+            <select
+              value={selectedStaff}
+              onChange={handleStaffChange}
+              disabled={isLoadingStaff || !selectedClinic}
+              className="bg-primary-foreground/10 text-primary-foreground text-sm rounded-md px-2 py-1 border border-primary-foreground/20 focus:outline-none focus:ring-1 focus:ring-primary-foreground/30 min-w-[140px]"
+            >
+              {staffList.map((staff) => (
+                <option key={staff.id} value={staff.id} className="bg-card text-foreground">
+                  {staff.name}
                 </option>
               ))}
             </select>
           </div>
         )}
 
-        {/* Clinic Display - For regular staff */}
-        {!isClinicManager && selectedClinicObj && (
-          <div className="flex items-center gap-2">
-            <Building2 className="w-4 h-4" />
-            <span className="text-sm">{selectedClinicObj.nameAr || selectedClinicObj.name}</span>
-          </div>
-        )}
-
-        {/* Staff Selection */}
-        <div className="flex items-center gap-2">
-          <Users className="w-4 h-4" />
-          <select
-            value={selectedStaff}
-            onChange={handleStaffChange}
-            disabled={isLoadingStaff || !selectedClinic}
-            className="bg-blue-700 text-white text-sm rounded px-2 py-1 border border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300"
-          >
-            <option value="">اختر الموظف</option>
-            {staffList.map((staff) => (
-              <option key={staff.id} value={staff.id}>
-                {staff.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Display current role (read-only) */}
-        {selectedStaffObj && (
-          <div className="flex items-center gap-2 ml-4 pl-4 border-l border-blue-500">
-            <span className="text-sm font-medium">{getRoleLabel(selectedStaffObj.role)}</span>
+        {/* Staff name for non-managers */}
+        {!canSwitchClinic && selectedStaffObj && (
+          <div className="flex items-center gap-2 text-sm">
+            <Users className="w-4 h-4 shrink-0" />
+            <span className="font-medium">{selectedStaffObj.name}</span>
           </div>
         )}
       </div>
@@ -179,92 +177,51 @@ export function ClinicRoleSwitcherBar({
   }
 
   return (
-    <div className="bg-white border-b border-gray-200 shadow-sm">
+    <div className="bg-card border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between py-4 gap-6" dir="rtl">
-          <div className="text-sm font-medium text-gray-700">
-            إدارة العيادات والموظفين
+        <div className="flex items-center gap-4 py-3" dir="rtl">
+          {/* Clinic Section */}
+          <div className="flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-muted-foreground" />
+            {canSwitchClinic ? (
+              <select
+                value={selectedClinic}
+                onChange={handleClinicChange}
+                disabled={isLoadingClinics}
+                className="px-3 py-1.5 text-sm border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring bg-background"
+              >
+                {clinics.map((clinic) => (
+                  <option key={clinic.id} value={clinic.id}>
+                    {clinic.nameAr || clinic.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="text-sm font-medium">{selectedClinicObj?.nameAr || selectedClinicObj?.name}</span>
+            )}
           </div>
 
-          <div className="flex items-center gap-6">
-            {/* Clinic Selection - Only for managers */}
-            {isClinicManager ? (
-              <div className="flex items-center gap-3">
-                <Building2 className="w-5 h-5 text-blue-600" />
-                <div className="flex flex-col">
-                  <label className="text-xs font-medium text-gray-600 mb-1">
-                    اختر العيادة
-                  </label>
-                  <select
-                    value={selectedClinic}
-                    onChange={handleClinicChange}
-                    disabled={isLoadingClinics}
-                    className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
-                  >
-                    <option value="">اختر العيادة</option>
-                    {clinics.map((clinic) => (
-                      <option key={clinic.id} value={clinic.id}>
-                        {clinic.nameAr || clinic.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+          {/* Divider */}
+          <div className="h-4 w-px bg-border" />
+
+          {/* Staff Section */}
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-muted-foreground" />
+            {canSwitchClinic ? (
+              <select
+                value={selectedStaff}
+                onChange={handleStaffChange}
+                disabled={isLoadingStaff || !selectedClinic}
+                className="px-3 py-1.5 text-sm border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring bg-background"
+              >
+                {staffList.map((staff) => (
+                  <option key={staff.id} value={staff.id}>
+                    {staff.name}
+                  </option>
+                ))}
+              </select>
             ) : (
-              <div className="flex items-center gap-3">
-                <Building2 className="w-5 h-5 text-blue-600" />
-                <div className="flex flex-col">
-                  <label className="text-xs font-medium text-gray-600 mb-1">
-                    العيادة
-                  </label>
-                  <div className="px-3 py-2 text-sm bg-gray-50 rounded-lg text-gray-700 border border-gray-200">
-                    {selectedClinicObj?.nameAr || selectedClinicObj?.name || "العيادة الرئيسية"}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Staff Selection */}
-            <div className="flex items-center gap-3">
-              <Users className="w-5 h-5 text-green-600" />
-              <div className="flex flex-col">
-                <label className="text-xs font-medium text-gray-600 mb-1">
-                  اختر الموظف
-                </label>
-                <select
-                  value={selectedStaff}
-                  onChange={handleStaffChange}
-                  disabled={isLoadingStaff || !selectedClinic}
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-gray-900"
-                >
-                  <option value="">اختر الموظف</option>
-                  {staffList.map((staff) => (
-                    <option key={staff.id} value={staff.id}>
-                      {staff.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Role Display (Read-only) */}
-            {selectedStaffObj && (
-              <div className="flex items-center gap-3 px-3 py-2 bg-purple-50 rounded-lg">
-                <div className="text-sm">
-                  <span className="font-medium text-purple-700">{getRoleLabel(selectedStaffObj.role)}</span>
-                </div>
-              </div>
-            )}
-
-            {/* Display current info badge */}
-            {showBadge && selectedClinicObj && selectedStaffObj && (
-              <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg text-sm border border-blue-200">
-                <div className="text-gray-700">
-                  <span className="font-medium">{selectedClinicObj.nameAr}</span>
-                  {" • "}
-                  <span className="text-gray-600">{selectedStaffObj.name}</span>
-                </div>
-              </div>
+              <span className="text-sm font-medium">{selectedStaffObj?.name}</span>
             )}
           </div>
         </div>
