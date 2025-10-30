@@ -957,6 +957,7 @@ export default function DentistHub() {
         </div>
       </div>
     </div>;
+  };
   const SupplierDashboard = () => <div className="space-y-6">
       <QuickShortcuts />
       {/* Widgets: Mobile-first interactive summary */}
