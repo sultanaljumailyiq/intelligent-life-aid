@@ -1,0 +1,62 @@
+[build]
+command = "npm run build && npm run build:server"
+publish = "dist/spa"
+functions = "netlify/functions"
+base = "."
+
+[dev]
+command = "npm run dev"
+port = 5000
+
+# Redirect all API calls to the Netlify Functions
+[[redirects]]
+from = "/api/*"
+to = "/.netlify/functions/api:splat"
+status = 200
+force = true
+
+# Catch-all redirect for SPA routing
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
+
+[context.production.environment]
+NODE_ENV = "production"
+
+[context.deploy-preview]
+command = "npm run build && npm run build:server"
+
+[context.branch-deploy]
+command = "npm run build && npm run build:server"
+
+[[headers]]
+for = "/.netlify/functions/api/*"
+[headers.values]
+Cache-Control = "public, max-age=0, must-revalidate"
+X-Content-Type-Options = "nosniff"
+X-Frame-Options = "SAMEORIGIN"
+X-XSS-Protection = "1; mode=block"
+
+[[headers]]
+for = "/api/*"
+[headers.values]
+Cache-Control = "public, max-age=0, must-revalidate"
+X-Content-Type-Options = "nosniff"
+X-Frame-Options = "SAMEORIGIN"
+X-XSS-Protection = "1; mode=block"
+
+[[headers]]
+for = "/*.{js,css,woff,woff2}"
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "/index.html"
+[headers.values]
+Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+for = "/"
+[headers.values]
+Cache-Control = "public, max-age=0, must-revalidate"
