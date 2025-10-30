@@ -162,15 +162,18 @@ export async function createOrder(req: Request, res: Response) {
         unionEndorsed: suppliers.unionEndorsed,
       })
       .from(suppliers)
-      .where(inArray(suppliers.id, supplierIds));
+      .where(inArray(suppliers.id, supplierIds as number[]));
     
     const commissionsData = await db
       .select()
       .from(commissionSettings)
-      .where(inArray(commissionSettings.supplierId, supplierIds));
+      .where(inArray(commissionSettings.supplierId, supplierIds as number[]));
     
-    const supplierMap = new Map(suppliersData.map(s => [s.id, s]));
-    const commissionMap = new Map(commissionsData.map(c => [c.supplierId, c]));
+    type SupplierData = { id: number; unionEndorsed: boolean | null };
+    type CommissionData = typeof commissionsData[number];
+    
+    const supplierMap = new Map<number, SupplierData>(suppliersData.map(s => [s.id, s]));
+    const commissionMap = new Map<number, CommissionData>(commissionsData.map(c => [c.supplierId, c]));
 
     // Create order items with correct commission calculation
     const orderItemsData = cartItems.map(item => {

@@ -95,7 +95,7 @@ export const staffCreateSchema = z.object({
   arabicName: arabicNameSchema.optional(),
   phone: phoneSchema,
   role: z.enum(["doctor", "nurse", "receptionist", "manager"]),
-  clinicId: idSchema,
+  clinicId: z.number().int().positive(),
   specialization: z.string().optional(),
   licenseNumber: z.string().optional(),
 });

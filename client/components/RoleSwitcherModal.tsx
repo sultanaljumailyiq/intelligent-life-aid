@@ -21,12 +21,12 @@ export default function RoleSwitcherModal({
   open,
   onOpenChange,
 }: RoleSwitcherModalProps) {
-  const { user, isAdmin } = useAuth();
+  const { user, hasRole } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
   // Only show to admins
-  if (!isAdmin()) {
+  if (!hasRole(UserRole.PLATFORM_ADMIN)) {
     return null;
   }
 

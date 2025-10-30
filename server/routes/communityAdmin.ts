@@ -118,7 +118,7 @@ router.post("/moderators", async (req, res) => {
     res.status(201).json(newModerator);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: "Invalid input", details: error.errors });
+      return res.status(400).json({ error: "Invalid input", details: error.issues });
     }
     res.status(500).json({ error: "Failed to create moderator" });
   }
@@ -140,7 +140,7 @@ router.put("/moderators/:id", async (req, res) => {
     res.json(updated);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: "Invalid input", details: error.errors });
+      return res.status(400).json({ error: "Invalid input", details: error.issues });
     }
     res.status(500).json({ error: "Failed to update moderator" });
   }
@@ -189,7 +189,7 @@ router.post("/events", async (req, res) => {
     res.status(201).json(newEvent);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: "Invalid input", details: error.errors });
+      return res.status(400).json({ error: "Invalid input", details: error.issues });
     }
     res.status(500).json({ error: "Failed to create event" });
   }
@@ -211,7 +211,7 @@ router.put("/events/:id", async (req, res) => {
     res.json(updated);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: "Invalid input", details: error.errors });
+      return res.status(400).json({ error: "Invalid input", details: error.issues });
     }
     res.status(500).json({ error: "Failed to update event" });
   }
@@ -243,7 +243,7 @@ router.post("/trusted-sources", async (req, res) => {
     res.status(201).json(newSource);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: "Invalid input", details: error.errors });
+      return res.status(400).json({ error: "Invalid input", details: error.issues });
     }
     res.status(500).json({ error: "Failed to create source" });
   }
@@ -265,7 +265,7 @@ router.put("/trusted-sources/:id", async (req, res) => {
     res.json(updated);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: "Invalid input", details: error.errors });
+      return res.status(400).json({ error: "Invalid input", details: error.issues });
     }
     res.status(500).json({ error: "Failed to update source" });
   }
@@ -315,7 +315,7 @@ router.post("/3d-models", async (req, res) => {
     res.status(201).json(newModel);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: "Invalid input", details: error.errors });
+      return res.status(400).json({ error: "Invalid input", details: error.issues });
     }
     res.status(500).json({ error: "Failed to create 3D model" });
   }
@@ -337,7 +337,7 @@ router.put("/3d-models/:id", async (req, res) => {
     res.json(updated);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: "Invalid input", details: error.errors });
+      return res.status(400).json({ error: "Invalid input", details: error.issues });
     }
     res.status(500).json({ error: "Failed to update 3D model" });
   }
@@ -411,7 +411,7 @@ router.post("/educational-content", async (req, res) => {
     res.status(201).json(newContent);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: "Invalid input", details: error.errors });
+      return res.status(400).json({ error: "Invalid input", details: error.issues });
     }
     res.status(500).json({ error: "Failed to create content" });
   }
@@ -433,7 +433,7 @@ router.put("/educational-content/:id", async (req, res) => {
     res.json(updated);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: "Invalid input", details: error.errors });
+      return res.status(400).json({ error: "Invalid input", details: error.issues });
     }
     res.status(500).json({ error: "Failed to update content" });
   }

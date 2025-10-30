@@ -25,7 +25,7 @@ export interface CreateStaffInput {
   clinicId: number;
   userId?: number | null; // Optional - if linking to existing user
   name: string;
-  arabicName: string;
+  arabicName?: string;
   email?: string;
   phone?: string;
   username?: string;
