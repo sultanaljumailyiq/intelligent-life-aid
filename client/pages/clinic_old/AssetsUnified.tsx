@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { ClinicRoleSwitcherBar } from "@/components/ClinicRoleSwitcherBar";
 import Stocks from "@/pages/Stocks";
 import Peripherals from "@/pages/Peripherals";
 import { Boxes, Cpu, Loader2 } from "lucide-react";
@@ -7,10 +9,14 @@ import { sharedClinicData } from "@/services/sharedClinicData";
 import { adaptInventoryListToLegacy, LegacyInventoryItem } from "@/services/clinicDataAdapter";
 
 export default function AssetsUnified() {
+  const [searchParams] = useSearchParams();
+  const clinicId = searchParams.get("clinicId") || "clinic-1";
   const [tab, setTab] = useState<"stocks" | "peripherals">("stocks");
   const [inventory, setInventory] = useState<LegacyInventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedClinicId, setSelectedClinicId] = useState<string>("");
+  const [selectedStaffId, setSelectedStaffId] = useState<string>("");
 
   const tabs = [
     { id: "stocks" as const, label: "المخزون", icon: Boxes },
@@ -19,14 +25,15 @@ export default function AssetsUnified() {
 
   useEffect(() => {
     loadInventoryData();
-  }, []);
+  }, [clinicId, selectedClinicId]);
 
   const loadInventoryData = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const inventoryData = await sharedClinicData.getInventory();
+      const activeClinicId = selectedClinicId || clinicId;
+      const inventoryData = await sharedClinicData.getInventory(activeClinicId);
       const legacyInventory = adaptInventoryListToLegacy(inventoryData);
       
       setInventory(legacyInventory);
@@ -40,6 +47,14 @@ export default function AssetsUnified() {
 
   return (
     <div className="space-y-4">
+      {/* Clinic Role Switcher */}
+      <ClinicRoleSwitcherBar
+        variant="full"
+        showBadge={true}
+        onClinicChange={setSelectedClinicId}
+        onStaffChange={setSelectedStaffId}
+      />
+      
       <div className="bg-white border rounded-xl p-2">
         <div className="flex gap-2 overflow-x-auto">
           {tabs.map((t) => {

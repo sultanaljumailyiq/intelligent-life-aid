@@ -173,7 +173,7 @@ const Treatments = () => {
     };
 
     loadTreatments();
-  }, []);
+  }, [clinicId]);
 
   const filteredTreatments = treatments.filter(treatment => {
     const matchesSearch = treatment.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

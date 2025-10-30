@@ -21,6 +21,7 @@ import SmartClinicChatbot from "./SmartClinicChatbot";
 import SmartClinicLearning from "./SmartClinicLearning";
 import SmartClinicKnowledge from "./SmartClinicKnowledge";
 import DentistHubProfile from "./DentistHubProfile";
+import { useClinic } from "@/contexts/ClinicContext";
 import { useStaffPermissions } from "@/hooks/useStaffPermissions";
 import StaffRoleSwitcher from "@/components/StaffRoleSwitcher";
 
@@ -70,21 +71,21 @@ const mockUsers = {
 };
 export default function DentistHub() {
   const location = useLocation();
-  const {
-    user
-  } = useAuth();
-  const {
-    favorites,
-    favoritesCount
-  } = useFavorites();
+  const { user, hasRole } = useAuth();
+  const { favorites, favoritesCount } = useFavorites();
   const { canAccessSection, isStaffMode, staff: staffUser } = useStaffPermissions();
+  const { selectedClinicId, selectedClinic } = useClinic();
+  
   const derivedType: UserRole = useMemo(() => {
     if (!user) return "dentist";
     const role = user.role as SystemUserRole;
     return role === "supplier" ? "supplier" : "dentist";
   }, [user]);
+  
   const [userType, setUserType] = useState<UserRole>(derivedType);
+  
   useEffect(() => setUserType(derivedType), [derivedType]);
+  
   const [activeTab, setActiveTab] = useState("overview");
   const [patients, setPatients] = useState<Patient[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -94,18 +95,20 @@ export default function DentistHub() {
   const [clinicsCount, setClinicsCount] = useState<number | null>(null);
   const [staffTasks, setStaffTasks] = useState<any[]>([]);
   const [staffReminders, setStaffReminders] = useState<any[]>([]);
+  
   useEffect(() => {
     let mounted = true;
     const load = async () => {
       try {
+        const clinicId = selectedClinicId || "clinic-1";
         const [pts, appts, tps, inv, st, tasks, reminders] = await Promise.all([
-          sharedClinicData.getPatients(), 
-          sharedClinicData.getAppointments(), 
-          sharedClinicData.getTreatmentPlans(), 
-          sharedClinicData.getInventory(), 
-          sharedClinicData.getStaff(),
-          sharedClinicData.getStaffTasks(),
-          sharedClinicData.getStaffReminders()
+          sharedClinicData.getPatients(clinicId), 
+          sharedClinicData.getAppointments(clinicId), 
+          sharedClinicData.getTreatmentPlans(clinicId), 
+          sharedClinicData.getInventory(clinicId), 
+          sharedClinicData.getStaff(clinicId),
+          sharedClinicData.getStaffTasks(clinicId),
+          sharedClinicData.getStaffReminders(clinicId)
         ]);
         if (!mounted) return;
         setPatients(pts);
@@ -121,9 +124,7 @@ export default function DentistHub() {
         if (userData) {
           const u = JSON.parse(userData);
           if (u?.id) {
-            const {
-              ClinicService
-            } = await import("@/services/clinicService");
+            const { ClinicService } = await import("@/services/clinicService");
             const clinics = await ClinicService.getDoctorClinics(u.id).catch(() => null);
             if (mounted) setClinicsCount(Array.isArray(clinics) ? clinics.length : null);
           }
@@ -136,7 +137,7 @@ export default function DentistHub() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [selectedClinicId]);
   const upcomingAppointments = appointments.filter(a => {
     const dt = new Date(`${a.date}T${(a as any).time || "00:00"}`);
     return dt >= new Date() && (a.status === "scheduled" || a.status === "confirmed");

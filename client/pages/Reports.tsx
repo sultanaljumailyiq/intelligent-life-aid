@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { ClinicRoleSwitcherBar } from "@/components/ClinicRoleSwitcherBar";
 import {
   BarChart3,
   PieChart,
@@ -284,6 +286,10 @@ const sampleData = {
 };
 
 const Reports = () => {
+  const [searchParams] = useSearchParams();
+  const clinicId = searchParams.get("clinicId") || "clinic-1";
+  const [selectedClinicId, setSelectedClinicId] = useState<string>("");
+  const [selectedStaffId, setSelectedStaffId] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState("financial");
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -415,6 +421,14 @@ const Reports = () => {
 
   return (
     <div className="space-y-8" dir="rtl">
+      {/* Clinic Role Switcher */}
+      <ClinicRoleSwitcherBar
+        variant="full"
+        showBadge={true}
+        onClinicChange={setSelectedClinicId}
+        onStaffChange={setSelectedStaffId}
+      />
+      
       {/* Header */}
       <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-8 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>

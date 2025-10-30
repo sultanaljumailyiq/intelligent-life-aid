@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { ClinicRoleSwitcherBar } from "@/components/ClinicRoleSwitcherBar";
 import {
   Package,
   Plus,
@@ -49,6 +50,8 @@ import { toast } from "sonner";
 
 const ClinicOldLab: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const clinicId = searchParams.get("clinicId") || "clinic-1";
   const [labOrders, setLabOrders] = useState<LabOrder[]>([]);
   const [laboratories, setLaboratories] = useState<Laboratory[]>([]);
   const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlan[]>([]);
@@ -57,17 +60,22 @@ const ClinicOldLab: React.FC = () => {
   const [selectedLab, setSelectedLab] = useState<string>("all");
   const [tab, setTab] = useState<"orders" | "labs" | "stats">("orders");
   const [showNewOrderModal, setShowNewOrderModal] = useState(false);
+  const [selectedClinicId, setSelectedClinicId] = useState<string>("");
+  const [selectedStaffId, setSelectedStaffId] = useState<string>("");
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (clinicId || selectedClinicId) {
+      loadData();
+    }
+  }, [clinicId, selectedClinicId]);
 
   const loadData = async () => {
     try {
+      const activeClinicId = selectedClinicId || clinicId;
       const [orders, labs, plans] = await Promise.all([
-        sharedClinicData.getLabOrders(),
+        sharedClinicData.getLabOrders(activeClinicId),
         sharedClinicData.getLaboratories(),
-        sharedClinicData.getTreatmentPlans(),
+        sharedClinicData.getTreatmentPlans(activeClinicId),
       ]);
       setLabOrders(orders);
       setLaboratories(labs);
@@ -222,6 +230,14 @@ const ClinicOldLab: React.FC = () => {
 
   return (
     <div className="space-y-6" dir="rtl">
+      {/* Clinic Role Switcher */}
+      <ClinicRoleSwitcherBar
+        variant="full"
+        showBadge={true}
+        onClinicChange={setSelectedClinicId}
+        onStaffChange={setSelectedStaffId}
+      />
+      
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl p-8 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>

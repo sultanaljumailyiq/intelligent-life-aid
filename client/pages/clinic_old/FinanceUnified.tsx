@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { ClinicRoleSwitcherBar } from "@/components/ClinicRoleSwitcherBar";
 import Accounts from "@/pages/Accounts";
 import Sales from "@/pages/Sales";
 import Purchases from "@/pages/Purchases";
@@ -100,32 +102,37 @@ function EmployeesFinance({ staff, loading }: { staff: Staff[]; loading: boolean
 }
 
 export default function FinanceUnified() {
+  const [searchParams] = useSearchParams();
+  const clinicId = searchParams.get("clinicId") || "clinic-1";
   const [tab, setTab] = useState<
     "accounts" | "sales" | "purchases" | "employees"
   >("accounts");
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<ClinicStats | null>(null);
   const [staff, setStaff] = useState<Staff[]>([]);
+  const [selectedClinicId, setSelectedClinicId] = useState<string>("");
+  const [selectedStaffId, setSelectedStaffId] = useState<string>("");
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        const [clinicStats, staffData] = await Promise.all([
-          sharedClinicData.getClinicStats(),
-          sharedClinicData.getStaff()
-        ]);
-        setStats(clinicStats);
-        setStaff(staffData);
-      } catch (error) {
-        console.error("Error loading financial data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadData();
-  }, []);
+  }, [clinicId, selectedClinicId]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const activeClinicId = selectedClinicId || clinicId;
+      const [clinicStats, staffData] = await Promise.all([
+        sharedClinicData.getClinicStats(activeClinicId),
+        sharedClinicData.getStaff(activeClinicId)
+      ]);
+      setStats(clinicStats);
+      setStaff(staffData);
+    } catch (error) {
+      console.error("Error loading financial data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const tabs = [
     { id: "accounts" as const, label: "الحسابات", icon: Wallet },
@@ -136,6 +143,14 @@ export default function FinanceUnified() {
 
   return (
     <div className="space-y-4" dir="rtl">
+      {/* Clinic Role Switcher */}
+      <ClinicRoleSwitcherBar
+        variant="full"
+        showBadge={true}
+        onClinicChange={setSelectedClinicId}
+        onStaffChange={setSelectedStaffId}
+      />
+      
       <div className="bg-white border rounded-xl p-2">
         <div className="flex gap-2 overflow-x-auto">
           {tabs.map((t) => {
