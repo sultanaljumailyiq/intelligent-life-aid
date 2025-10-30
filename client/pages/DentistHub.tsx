@@ -96,11 +96,12 @@ export default function DentistHub() {
   const [staffTasks, setStaffTasks] = useState<any[]>([]);
   const [staffReminders, setStaffReminders] = useState<any[]>([]);
   
+  // Reload data when clinic or staff changes
   useEffect(() => {
     let mounted = true;
     const load = async () => {
       try {
-        const clinicId = selectedClinicId || "clinic-1";
+        const clinicId = selectedClinicId || undefined;
         const [pts, appts, tps, inv, st, tasks, reminders] = await Promise.all([
           sharedClinicData.getPatients(clinicId), 
           sharedClinicData.getAppointments(clinicId), 
@@ -118,7 +119,9 @@ export default function DentistHub() {
         setStaff(st);
         setStaffTasks(tasks);
         setStaffReminders(reminders);
-      } catch {}
+      } catch (err) {
+        console.error("Failed to load clinic data:", err);
+      }
       try {
         const userData = localStorage.getItem("user_data");
         if (userData) {
@@ -137,7 +140,7 @@ export default function DentistHub() {
     return () => {
       mounted = false;
     };
-  }, [selectedClinicId]);
+  }, [selectedClinicId, staffUser?.id]);
   const upcomingAppointments = appointments.filter(a => {
     const dt = new Date(`${a.date}T${(a as any).time || "00:00"}`);
     return dt >= new Date() && (a.status === "scheduled" || a.status === "confirmed");
@@ -567,8 +570,64 @@ export default function DentistHub() {
         </div>
       </div>;
   };
-  const DentistDashboard = () => <div className="space-y-6">
+  const DentistDashboard = () => {
+    const todayAppointments = appointments.filter(a => a.date === new Date().toISOString().slice(0, 10));
+    const pendingTasks = staffTasks.filter(t => t.status === "pending");
+    const pendingReminders = staffReminders.filter(r => r.status === "pending");
+    
+    return <div className="space-y-6">
       <QuickShortcuts />
+      
+      {/* Main Statistics - Clickable Cards */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-4 md:p-6">
+        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <Activity className="w-5 h-5 text-blue-500" />
+          الإحصائيات الرئيسية - {selectedClinic?.nameAr || "العيادة"}
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <StatWidget 
+            title="مواعيد اليوم" 
+            value={todayAppointments.length} 
+            icon={Calendar} 
+            color="blue" 
+            subtitle={`من ${appointments.length} إجمالي`}
+            onClick={() => navigate(`/clinic_old/reservations?clinicId=${selectedClinicId}`)} 
+          />
+          <StatWidget 
+            title="إجمالي المرضى" 
+            value={patients.length} 
+            icon={Users} 
+            color="green" 
+            subtitle="في هذه العيادة"
+            onClick={() => navigate(`/clinic_old/patients?clinicId=${selectedClinicId}`)} 
+          />
+          <StatWidget 
+            title="المهام المعلقة" 
+            value={pendingTasks.length} 
+            icon={ListTodo} 
+            color="purple" 
+            subtitle={`من ${staffTasks.length} إجمالي`}
+            onClick={() => navigate("/dentist-hub/tasks-reminders")} 
+          />
+          <StatWidget 
+            title="التذكيرات" 
+            value={pendingReminders.length} 
+            icon={Bell} 
+            color="orange" 
+            subtitle="قادمة"
+            onClick={() => navigate("/dentist-hub/tasks-reminders")} 
+          />
+          <StatWidget 
+            title="الإشعارات" 
+            value={3} 
+            icon={MessageCircle} 
+            color="red" 
+            subtitle="جديدة"
+            onClick={() => navigate("/dentist-hub/notifications")} 
+          />
+        </div>
+      </div>
+      
       {hasClinicPermission("clinic", "read") && <ClinicShortcuts />}
       {/* Widgets: Mobile-first interactive summary */}
       
@@ -586,7 +645,7 @@ export default function DentistHub() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <StatWidget title="عدد العيادات" value={clinicsCount ?? "—"} icon={Building} color="blue" onClick={() => navigate("/dentist-hub/clinics")} />
-              <StatWidget title="الطاقم" value={staff.length} icon={Users} color="teal" onClick={() => navigate("/clinic_old/staff")} />
+              <StatWidget title="الطاقم" value={staff.length} icon={Users} color="teal" onClick={() => navigate(`/clinic_old/staff?clinicId=${selectedClinicId}`)} />
             </div>
           </div>
           <div className="bg-white rounded-2xl border border-gray-100 p-4 md:p-6">
@@ -664,8 +723,16 @@ export default function DentistHub() {
             }
           };
           return <div key={index} className="flex items-center gap-3 p-3 md:p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 active:scale-95 transition-all cursor-pointer" onClick={handleActivityClick}>
-                <div className={`w-10 h-10 bg-${activity.color}-100 rounded-2xl flex items-center justify-center`}>
-                  <Icon className={`w-5 h-5 text-${activity.color}-600`} />
+                <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center",
+                  activity.color === "blue" && "bg-blue-100",
+                  activity.color === "green" && "bg-green-100",
+                  activity.color === "purple" && "bg-purple-100"
+                )}>
+                  <Icon className={cn("w-5 h-5",
+                    activity.color === "blue" && "text-blue-600",
+                    activity.color === "green" && "text-green-600",
+                    activity.color === "purple" && "text-purple-600"
+                  )} />
                 </div>
                 <div className="flex-1">
                   <div className="font-medium text-gray-900">
@@ -712,12 +779,12 @@ export default function DentistHub() {
             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
               <GitBranch className="w-5 h-5 text-purple-600" /> خطط العلاج
             </h3>
-            <Link to="/clinic_old/treatments" className="text-purple-600 text-sm">
+            <Link to={`/clinic_old/treatments?clinicId=${selectedClinicId}`} className="text-purple-600 text-sm">
               الإدارة
             </Link>
           </div>
           <div className="space-y-2">
-            {plans.slice(0, 5).map(p => <div key={p.id} className="p-2 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => navigate("/clinic_old/treatments")}>
+            {plans.slice(0, 5).map(p => <div key={p.id} className="p-2 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => navigate(`/clinic_old/treatments?clinicId=${selectedClinicId}`)}>
                 <div className="text-sm font-medium text-gray-800">
                   {p.patientName} • {p.title}
                 </div>
@@ -789,7 +856,7 @@ export default function DentistHub() {
             </Link>
           </div>
           <div className="space-y-2">
-            {lowStockItems.map(i => <div key={i.id} className="flex items-center justify-between p-2 bg-amber-50 rounded-xl cursor-pointer hover:bg-amber-100 transition-colors" onClick={() => navigate("/clinic_old/stocks")}>
+            {lowStockItems.map(i => <div key={i.id} className="flex items-center justify-between p-2 bg-amber-50 rounded-xl cursor-pointer hover:bg-amber-100 transition-colors" onClick={() => navigate(`/clinic_old/stocks?clinicId=${selectedClinicId}`)}>
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-amber-600" />
                   <div className="text-sm text-gray-800">{i.name}</div>
@@ -848,21 +915,22 @@ export default function DentistHub() {
           <div className="space-y-2">
             {staffReminders.filter(r => r.status === "pending").slice(0, 2).map((reminder) => {
               const handleReminderNavigate = () => {
+                const params = new URLSearchParams({ clinicId: selectedClinicId || "" });
                 switch (reminder.reminderType) {
                   case "appointment":
-                    navigate("/clinic_old/reservations");
+                    navigate(`/clinic_old/reservations?${params}`);
                     break;
                   case "followup":
-                    navigate(reminder.patientId ? `/clinic_old/patients/${reminder.patientId}` : "/clinic_old/patients");
+                    navigate(reminder.patientId ? `/clinic_old/patients/${reminder.patientId}?${params}` : `/clinic_old/patients?${params}`);
                     break;
                   case "lab_result":
-                    navigate("/clinic_old/lab");
+                    navigate(`/clinic_old/lab?${params}`);
                     break;
                   case "payment":
-                    navigate("/clinic_old/finance");
+                    navigate(`/clinic_old/finance?${params}`);
                     break;
                   case "medication":
-                    navigate(reminder.patientId ? `/clinic_old/patients/${reminder.patientId}` : "/clinic_old/patients");
+                    navigate(reminder.patientId ? `/clinic_old/patients/${reminder.patientId}?${params}` : `/clinic_old/patients?${params}`);
                     break;
                   default:
                     navigate("/dentist-hub/tasks-reminders");
@@ -970,6 +1038,6 @@ export default function DentistHub() {
       </div>
 
       {/* Bottom Navigation */}
-      {/* يستخدم ال��ريط السفلي الموحد من الغلاف */}
+      {/* يستخدم الشريط السفلي الموحد من الغلاف */}
     </div>;
-}
+  }
