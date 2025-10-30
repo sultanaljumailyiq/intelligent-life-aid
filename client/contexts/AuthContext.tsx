@@ -250,16 +250,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             permissions,
           });
         } else {
-          // Create a default dentist user for development/testing
+          // Create a default platform admin user for development/testing
           const defaultUser: User = {
-            id: "test_dentist_1",
-            email: "dentist@test.com",
+            id: "platform_admin_1",
+            email: "admin@smartdental.iq",
             phone: "+964750123456",
-            name: "Dr. Test Dentist",
-            arabicName: "د. طبيب الاختبار",
-            role: UserRole.DENTIST,
+            name: "Platform Administrator",
+            arabicName: "مدير المنصة",
+            role: UserRole.PLATFORM_ADMIN,
             status: UserStatus.ACTIVE,
-            avatar: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&h=200&fit=crop",
+            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop",
             profile: {},
             permissions: [],
             createdAt: new Date(),

@@ -116,8 +116,12 @@ export function ClinicRoleSwitcherBar({
 
   // Check if user is platform admin or clinic manager
   const isPlatformAdmin = hasRole(UserRole.PLATFORM_ADMIN);
-  const isClinicOwner = selectedStaffObj?.role === "manager";
-  const canSwitchClinic = isPlatformAdmin || isClinicOwner;
+  const isDentist = hasRole(UserRole.DENTIST);
+  const isClinicManager = selectedStaffObj?.role === "manager";
+  
+  // Platform admins and dentists (clinic owners) can switch
+  // Regular staff cannot switch clinics
+  const canSwitchClinic = isPlatformAdmin || isDentist || isClinicManager;
 
   if (variant === "compact") {
     return (
