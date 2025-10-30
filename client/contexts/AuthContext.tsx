@@ -187,7 +187,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               permissions,
             });
           } else {
-            setAuthState((prev) => ({ ...prev, isLoading: false }));
+            // Check localStorage for demo/test users
+            const token = localStorage.getItem("auth_token");
+            const userData = localStorage.getItem("user_data");
+            
+            if (token && userData) {
+              try {
+                const user = JSON.parse(userData) as User;
+                const permissions = DEFAULT_PERMISSIONS[user.role] || [];
+                setAuthState({
+                  user,
+                  isAuthenticated: true,
+                  isLoading: false,
+                  permissions,
+                });
+              } catch (e) {
+                console.error("Error parsing localStorage user data:", e);
+                setAuthState((prev) => ({ ...prev, isLoading: false }));
+              }
+            } else {
+              setAuthState((prev) => ({ ...prev, isLoading: false }));
+            }
           }
 
           supabase.auth.onAuthStateChange((_event, newSession) => {
