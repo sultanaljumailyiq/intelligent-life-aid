@@ -22,6 +22,7 @@ import { SystemSettingsProvider } from "./contexts/SystemSettingsContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { StaffAuthProvider } from "./contexts/StaffAuthContext";
 import { NavigationProvider } from "./contexts/NavigationContext";
+import { ClinicProvider } from "./contexts/ClinicContext";
 import StaffLogin from "./pages/StaffLogin";
 import MobileOptimizer from "./components/MobileOptimizer";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
@@ -214,16 +215,17 @@ const App = () => {
     <TooltipProvider>
       <I18nProvider>
         <AuthProvider>
-          <CartProvider>
-            <FavoritesProvider>
-              <BookmarksProvider>
-                <SystemSettingsProvider>
-                  <MobileOptimizer>
-                    <PWAInstallPrompt />
-                    <OfflineIndicator />
-                    <Toaster />
-                    <Sonner />
-                    <BrowserRouter
+          <ClinicProvider>
+            <CartProvider>
+              <FavoritesProvider>
+                <BookmarksProvider>
+                  <SystemSettingsProvider>
+                    <MobileOptimizer>
+                      <PWAInstallPrompt />
+                      <OfflineIndicator />
+                      <Toaster />
+                      <Sonner />
+                      <BrowserRouter
                       future={{
                         v7_startTransition: true,
                         v7_relativeSplatPath: true
@@ -1095,6 +1097,7 @@ const App = () => {
               </BookmarksProvider>
             </FavoritesProvider>
           </CartProvider>
+          </ClinicProvider>
         </AuthProvider>
       </I18nProvider>
     </TooltipProvider>
