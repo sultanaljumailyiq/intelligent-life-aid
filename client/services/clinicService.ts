@@ -24,6 +24,9 @@ export interface StaffMember {
   permissions: any;
   is_active: boolean;
   created_at: string;
+  name?: string;
+  email?: string;
+  phone?: string;
 }
 
 export const ClinicService = {
@@ -120,7 +123,14 @@ export const ClinicService = {
   async getClinicStaff(clinicId: string): Promise<StaffMember[]> {
     const { data, error } = await supabase
       .from('clinic_staff')
-      .select('*')
+      .select(`
+        *,
+        profiles:user_id (
+          full_name,
+          email,
+          phone
+        )
+      `)
       .eq('clinic_id', clinicId)
       .eq('is_active', true);
 
@@ -129,7 +139,13 @@ export const ClinicService = {
       return [];
     }
 
-    return data || [];
+    // Map the data to include profile information
+    return (data || []).map((staff: any) => ({
+      ...staff,
+      name: staff.profiles?.full_name || staff.profiles?.email || 'موظف',
+      email: staff.profiles?.email,
+      phone: staff.profiles?.phone
+    }));
   },
 
   // Check if user is clinic owner
