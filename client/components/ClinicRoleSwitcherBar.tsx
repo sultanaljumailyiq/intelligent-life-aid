@@ -36,21 +36,27 @@ export function ClinicRoleSwitcherBar({
     if (clinicIdFromUrl && clinicIdFromUrl !== selectedClinicId) {
       setSelectedClinicId(clinicIdFromUrl);
     }
-    
-    if (selectedClinicId) {
+  }, [clinicsLoading, searchParams, selectedClinicId, setSelectedClinicId]);
+
+  // Load staff when clinic changes
+  useEffect(() => {
+    if (selectedClinicId && !clinicsLoading) {
       loadStaffForClinic(selectedClinicId);
     }
-  }, [selectedClinicId, clinicsLoading, searchParams]);
+  }, [selectedClinicId, clinicsLoading]);
 
   // Load staff when clinic changes
   const loadStaffForClinic = async (clinicId: string) => {
     try {
       setIsLoadingStaff(true);
       const staff = await ClinicService.getClinicStaff(clinicId);
+      console.log('Loaded staff:', staff);
       setStaffList(staff || []);
 
-      if (staff && staff.length > 0) {
+      // Auto-select first staff member if available and none selected
+      if (staff && staff.length > 0 && !selectedStaff) {
         setSelectedStaff(staff[0].id);
+        onStaffChange?.(staff[0].id);
       }
     } catch (error) {
       console.error("Failed to load staff:", error);
@@ -139,7 +145,7 @@ export function ClinicRoleSwitcherBar({
         )}
 
         {/* Staff Section - Only for admins and managers */}
-        {canSwitchClinic && (
+        {canSwitchClinic && staffList.length > 0 && (
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 shrink-0" />
             <select
@@ -150,10 +156,17 @@ export function ClinicRoleSwitcherBar({
             >
               {staffList.map((staff) => (
                 <option key={staff.id} value={staff.id} className="bg-card text-foreground">
-                  {staff.name}
+                  {staff.name || 'غير معروف'}
                 </option>
               ))}
             </select>
+          </div>
+        )}
+
+        {canSwitchClinic && staffList.length === 0 && !isLoadingStaff && (
+          <div className="flex items-center gap-2 text-sm">
+            <Users className="w-4 h-4 shrink-0" />
+            <span className="font-medium">لا يوجد موظفين</span>
           </div>
         )}
 
@@ -197,9 +210,9 @@ export function ClinicRoleSwitcherBar({
           <div className="h-4 w-px bg-border" />
 
           {/* Staff Section */}
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-muted-foreground" />
-            {canSwitchClinic ? (
+          {canSwitchClinic && staffList.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-muted-foreground" />
               <select
                 value={selectedStaff}
                 onChange={handleStaffChange}
@@ -208,14 +221,26 @@ export function ClinicRoleSwitcherBar({
               >
                 {staffList.map((staff) => (
                   <option key={staff.id} value={staff.id}>
-                    {staff.name}
+                    {staff.name || 'غير معروف'}
                   </option>
                 ))}
               </select>
-            ) : (
-              <span className="text-sm font-medium">{selectedStaffObj?.name}</span>
-            )}
-          </div>
+            </div>
+          )}
+
+          {canSwitchClinic && staffList.length === 0 && !isLoadingStaff && (
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium">لا يوجد موظفين</span>
+            </div>
+          )}
+
+          {!canSwitchClinic && selectedStaffObj && (
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium">{selectedStaffObj.name}</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
