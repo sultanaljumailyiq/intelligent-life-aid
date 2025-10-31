@@ -34,15 +34,29 @@ export default function DentistHubProfile() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Initialize profile data from authenticated user
   const [profileData, setProfileData] = useState({
-    name: user?.name || "د. أحمد محمد",
-    email: user?.email || "ahmed.mohammed@email.com",
-    phone: user?.phone || "+964 770 123 4567",
-    specialization: "طب الأسنان التجميلي",
-    location: "بغداد، العراق",
-    bio: "طبيب أسنان متخصص في طب الأسنان التجميلي مع خبرة تزيد عن 10 سنوات",
-    avatar: user?.avatar || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&h=200&fit=crop",
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    specialization: "",
+    location: "",
+    bio: "",
+    avatar: user?.avatar || "",
   });
+
+  // Update profile data when user changes
+  useEffect(() => {
+    if (user) {
+      setProfileData(prev => ({
+        ...prev,
+        name: user.name || prev.name,
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone,
+        avatar: user.avatar || prev.avatar,
+      }));
+    }
+  }, [user]);
 
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",

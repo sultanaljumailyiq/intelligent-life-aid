@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Building2, Users, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { sharedClinicData } from "@/services/sharedClinicData";
 import { useAuth } from "@/contexts/AuthContext";
+import { useClinic } from "@/contexts/ClinicContext";
+import { ClinicService } from "@/services/clinicService";
 import { UserRole } from "@/types/system";
 
 interface SwitcherBarProps {
@@ -20,52 +21,40 @@ export function ClinicRoleSwitcherBar({
   onStaffChange,
 }: SwitcherBarProps) {
   const { user, hasRole } = useAuth();
+  const { clinics, selectedClinicId, setSelectedClinicId, loading: clinicsLoading } = useClinic();
   const [searchParams] = useSearchParams();
 
-  const [clinics, setClinics] = useState<any[]>([]);
-  const [selectedClinic, setSelectedClinic] = useState<string>("");
   const [selectedStaff, setSelectedStaff] = useState<string>("");
   const [staffList, setStaffList] = useState<any[]>([]);
-  const [isLoadingClinics, setIsLoadingClinics] = useState(true);
   const [isLoadingStaff, setIsLoadingStaff] = useState(false);
 
-  // Load clinics on mount
+  // Update selected clinic when context changes or URL param changes
   useEffect(() => {
-    const loadClinics = async () => {
-      try {
-        const data = await sharedClinicData.getClinics();
-        setClinics(data || []);
-
-        // Get clinic ID from URL or use first clinic
-        const clinicIdFromUrl = searchParams.get("clinicId");
-        let defaultClinicId = clinicIdFromUrl || (data && data.length > 0 ? data[0].id : "clinic-1");
-        
-        setSelectedClinic(defaultClinicId);
-        loadStaffForClinic(defaultClinicId);
-      } catch (error) {
-        console.error("Failed to load clinics:", error);
-      } finally {
-        setIsLoadingClinics(false);
-      }
-    };
-
-    loadClinics();
-  }, [searchParams]);
+    if (clinicsLoading) return;
+    
+    const clinicIdFromUrl = searchParams.get("clinicId");
+    if (clinicIdFromUrl && clinicIdFromUrl !== selectedClinicId) {
+      setSelectedClinicId(clinicIdFromUrl);
+    }
+    
+    if (selectedClinicId) {
+      loadStaffForClinic(selectedClinicId);
+    }
+  }, [selectedClinicId, clinicsLoading, searchParams]);
 
   // Load staff when clinic changes
   const loadStaffForClinic = async (clinicId: string) => {
     try {
       setIsLoadingStaff(true);
-      // Pass clinicId to getStaff to filter by clinic
-      const staff = await sharedClinicData.getStaff(clinicId);
+      const staff = await ClinicService.getClinicStaff(clinicId);
       setStaffList(staff || []);
 
       if (staff && staff.length > 0) {
-        const defaultStaffId = staff[0].id || "doc1";
-        setSelectedStaff(defaultStaffId);
+        setSelectedStaff(staff[0].id);
       }
     } catch (error) {
       console.error("Failed to load staff:", error);
+      setStaffList([]);
     } finally {
       setIsLoadingStaff(false);
     }
@@ -73,8 +62,7 @@ export function ClinicRoleSwitcherBar({
 
   const handleClinicChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const clinicId = e.target.value;
-    setSelectedClinic(clinicId);
-    loadStaffForClinic(clinicId);
+    setSelectedClinicId(clinicId);
     onClinicChange?.(clinicId);
 
     // Update URL
@@ -90,7 +78,7 @@ export function ClinicRoleSwitcherBar({
   };
 
   // If no clinics available, show loading state
-  if (isLoadingClinics && clinics.length === 0) {
+  if (clinicsLoading && clinics.length === 0) {
     return (
       <div className="bg-gradient-to-r from-teal-600 to-teal-700 text-white px-4 py-4 rounded-xl shadow-md">
         <div className="flex items-center gap-2 text-sm">جاري تحميل العيادات...</div>
@@ -111,7 +99,7 @@ export function ClinicRoleSwitcherBar({
     );
   }
 
-  const selectedClinicObj = clinics.find((c) => c.id === selectedClinic);
+  const selectedClinicObj = clinics.find((c) => c.id === selectedClinicId);
   const selectedStaffObj = staffList.find((s) => s.id === selectedStaff);
 
   // Check if user is platform admin or clinic manager
@@ -131,14 +119,14 @@ export function ClinicRoleSwitcherBar({
           <div className="flex items-center gap-2">
             <Building2 className="w-4 h-4 shrink-0" />
             <select
-              value={selectedClinic}
+              value={selectedClinicId || ''}
               onChange={handleClinicChange}
-              disabled={isLoadingClinics}
+              disabled={clinicsLoading}
               className="bg-primary-foreground/10 text-primary-foreground text-sm rounded-md px-2 py-1 border border-primary-foreground/20 focus:outline-none focus:ring-1 focus:ring-primary-foreground/30 min-w-[140px]"
             >
               {clinics.map((clinic) => (
                 <option key={clinic.id} value={clinic.id} className="bg-card text-foreground">
-                  {clinic.nameAr || clinic.name}
+                  {clinic.name_ar || clinic.name}
                 </option>
               ))}
             </select>
@@ -146,7 +134,7 @@ export function ClinicRoleSwitcherBar({
         ) : (
           <div className="flex items-center gap-2 text-sm">
             <Building2 className="w-4 h-4 shrink-0" />
-            <span className="font-medium">{selectedClinicObj?.nameAr || selectedClinicObj?.name}</span>
+            <span className="font-medium">{selectedClinicObj?.name_ar || selectedClinicObj?.name}</span>
           </div>
         )}
 
@@ -157,7 +145,7 @@ export function ClinicRoleSwitcherBar({
             <select
               value={selectedStaff}
               onChange={handleStaffChange}
-              disabled={isLoadingStaff || !selectedClinic}
+              disabled={isLoadingStaff || !selectedClinicId}
               className="bg-primary-foreground/10 text-primary-foreground text-sm rounded-md px-2 py-1 border border-primary-foreground/20 focus:outline-none focus:ring-1 focus:ring-primary-foreground/30 min-w-[140px]"
             >
               {staffList.map((staff) => (
@@ -189,19 +177,19 @@ export function ClinicRoleSwitcherBar({
             <Building2 className="w-4 h-4 text-muted-foreground" />
             {canSwitchClinic ? (
               <select
-                value={selectedClinic}
+                value={selectedClinicId || ''}
                 onChange={handleClinicChange}
-                disabled={isLoadingClinics}
+                disabled={clinicsLoading}
                 className="px-3 py-1.5 text-sm border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring bg-background"
               >
                 {clinics.map((clinic) => (
                   <option key={clinic.id} value={clinic.id}>
-                    {clinic.nameAr || clinic.name}
+                    {clinic.name_ar || clinic.name}
                   </option>
                 ))}
               </select>
             ) : (
-              <span className="text-sm font-medium">{selectedClinicObj?.nameAr || selectedClinicObj?.name}</span>
+              <span className="text-sm font-medium">{selectedClinicObj?.name_ar || selectedClinicObj?.name}</span>
             )}
           </div>
 
@@ -215,7 +203,7 @@ export function ClinicRoleSwitcherBar({
               <select
                 value={selectedStaff}
                 onChange={handleStaffChange}
-                disabled={isLoadingStaff || !selectedClinic}
+                disabled={isLoadingStaff || !selectedClinicId}
                 className="px-3 py-1.5 text-sm border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring bg-background"
               >
                 {staffList.map((staff) => (

@@ -153,6 +153,9 @@ export default function DentistHub() {
   const lowStockItems = inventory.filter(i => i.status === "low_stock" || i.status === "out_of_stock").slice(0, 5);
   const navigate = useNavigate();
   const { isFeatureEnabled, settings } = useSystemSettings();
+  
+  // Use mock data for display purposes only (for supplier stats)
+  // In production, this should come from the backend
   const currentUser = mockUsers[userType];
 
   // Mobile-first interactive stat widget
