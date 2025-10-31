@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Building2, Users, AlertCircle } from "lucide-react";
+import { Building2, Users, AlertCircle, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useClinic } from "@/contexts/ClinicContext";
 import { ClinicService } from "@/services/clinicService";
 import { UserRole } from "@/types/system";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface SwitcherBarProps {
   variant?: "compact" | "full";
@@ -66,8 +73,7 @@ export function ClinicRoleSwitcherBar({
     }
   };
 
-  const handleClinicChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const clinicId = e.target.value;
+  const handleClinicChange = (clinicId: string) => {
     setSelectedClinicId(clinicId);
     onClinicChange?.(clinicId);
 
@@ -77,8 +83,7 @@ export function ClinicRoleSwitcherBar({
     window.history.replaceState(null, "", `?${newSearchParams.toString()}`);
   };
 
-  const handleStaffChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const staffId = e.target.value;
+  const handleStaffChange = (staffId: string) => {
     setSelectedStaff(staffId);
     onStaffChange?.(staffId);
   };
@@ -135,18 +140,18 @@ export function ClinicRoleSwitcherBar({
         {canSwitchClinic ? (
           <div className="flex items-center gap-2">
             <Building2 className="w-4 h-4 shrink-0" />
-            <select
-              value={selectedClinicId || ''}
-              onChange={handleClinicChange}
-              disabled={clinicsLoading}
-              className="bg-primary-foreground/10 text-primary-foreground text-sm rounded-md px-2 py-1 border border-primary-foreground/20 focus:outline-none focus:ring-1 focus:ring-primary-foreground/30 min-w-[140px]"
-            >
-              {clinics.map((clinic) => (
-                <option key={clinic.id} value={clinic.id} className="bg-card text-foreground">
-                  {clinic.name_ar || clinic.name}
-                </option>
-              ))}
-            </select>
+            <Select value={selectedClinicId || ''} onValueChange={handleClinicChange} disabled={clinicsLoading}>
+              <SelectTrigger className="h-8 bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/20 min-w-[160px]">
+                <SelectValue placeholder="اختر العيادة" />
+              </SelectTrigger>
+              <SelectContent className="bg-card">
+                {clinics.map((clinic) => (
+                  <SelectItem key={clinic.id} value={clinic.id}>
+                    {clinic.name_ar || clinic.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         ) : (
           <div className="flex items-center gap-2 text-sm">
@@ -155,33 +160,39 @@ export function ClinicRoleSwitcherBar({
           </div>
         )}
 
-        {/* Staff Section - Only for admins and managers */}
+        {/* Staff Section */}
         {canSwitchClinic && staffList.length > 0 && (
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 shrink-0" />
-            <select
-              value={selectedStaff}
-              onChange={handleStaffChange}
-              disabled={isLoadingStaff || !selectedClinicId}
-              className="bg-primary-foreground/10 text-primary-foreground text-sm rounded-md px-2 py-1 border border-primary-foreground/20 focus:outline-none focus:ring-1 focus:ring-primary-foreground/30 min-w-[140px]"
-            >
-              {staffList.map((staff) => (
-                <option key={staff.id} value={staff.id} className="bg-card text-foreground">
-                  {staff.name || 'غير معروف'}
-                </option>
-              ))}
-            </select>
+            <Select value={selectedStaff} onValueChange={handleStaffChange} disabled={isLoadingStaff || !selectedClinicId}>
+              <SelectTrigger className="h-8 bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/20 min-w-[160px]">
+                <SelectValue placeholder="اختر الموظف" />
+              </SelectTrigger>
+              <SelectContent className="bg-card">
+                {/* Owner/Manager First */}
+                {selectedClinicObj && (
+                  <SelectItem value="owner" disabled className="font-semibold border-b">
+                    {selectedClinicObj.name_ar || selectedClinicObj.name} - المدير
+                  </SelectItem>
+                )}
+                {/* Staff Members */}
+                {staffList.map((staff) => (
+                  <SelectItem key={staff.id} value={staff.id} className="pr-6">
+                    {staff.name || 'غير معروف'} - {getRoleLabel(staff.role)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         )}
 
         {canSwitchClinic && staffList.length === 0 && !isLoadingStaff && (
           <div className="flex items-center gap-2 text-sm">
             <Users className="w-4 h-4 shrink-0" />
-            <span className="font-medium">لا يوجد موظفين</span>
+            <span className="opacity-70">لا يوجد موظفين</span>
           </div>
         )}
 
-        {/* Staff name for non-managers */}
         {!canSwitchClinic && selectedStaffObj && (
           <div className="flex items-center gap-2 text-sm">
             <Users className="w-4 h-4 shrink-0" />
@@ -200,18 +211,18 @@ export function ClinicRoleSwitcherBar({
           <div className="flex items-center gap-2">
             <Building2 className="w-4 h-4 text-muted-foreground" />
             {canSwitchClinic ? (
-              <select
-                value={selectedClinicId || ''}
-                onChange={handleClinicChange}
-                disabled={clinicsLoading}
-                className="px-3 py-1.5 text-sm border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring bg-background"
-              >
-                {clinics.map((clinic) => (
-                  <option key={clinic.id} value={clinic.id}>
-                    {clinic.name_ar || clinic.name}
-                  </option>
-                ))}
-              </select>
+              <Select value={selectedClinicId || ''} onValueChange={handleClinicChange} disabled={clinicsLoading}>
+                <SelectTrigger className="w-[200px] h-9">
+                  <SelectValue placeholder="اختر العيادة" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clinics.map((clinic) => (
+                    <SelectItem key={clinic.id} value={clinic.id}>
+                      {clinic.name_ar || clinic.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             ) : (
               <span className="text-sm font-medium">{selectedClinicObj?.name_ar || selectedClinicObj?.name}</span>
             )}
@@ -224,25 +235,32 @@ export function ClinicRoleSwitcherBar({
           {canSwitchClinic && staffList.length > 0 && (
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-muted-foreground" />
-              <select
-                value={selectedStaff}
-                onChange={handleStaffChange}
-                disabled={isLoadingStaff || !selectedClinicId}
-                className="px-3 py-1.5 text-sm border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring bg-background"
-              >
-                {staffList.map((staff) => (
-                  <option key={staff.id} value={staff.id}>
-                    {staff.name || 'غير معروف'}
-                  </option>
-                ))}
-              </select>
+              <Select value={selectedStaff} onValueChange={handleStaffChange} disabled={isLoadingStaff || !selectedClinicId}>
+                <SelectTrigger className="w-[200px] h-9">
+                  <SelectValue placeholder="اختر الموظف" />
+                </SelectTrigger>
+                <SelectContent>
+                  {/* Owner/Manager First */}
+                  {selectedClinicObj && (
+                    <SelectItem value="owner" disabled className="font-semibold border-b">
+                      {selectedClinicObj.name_ar || selectedClinicObj.name} - المدير
+                    </SelectItem>
+                  )}
+                  {/* Staff Members */}
+                  {staffList.map((staff) => (
+                    <SelectItem key={staff.id} value={staff.id} className="pr-6">
+                      {staff.name || 'غير معروف'} - {getRoleLabel(staff.role)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
           {canSwitchClinic && staffList.length === 0 && !isLoadingStaff && (
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium">لا يوجد موظفين</span>
+              <span className="text-sm text-muted-foreground">لا يوجد موظفين</span>
             </div>
           )}
 

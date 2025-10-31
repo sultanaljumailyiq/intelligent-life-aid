@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User, Phone, MapPin } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Phone, MapPin, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { UserRole } from "@/types/system";
 import { loginSchema, registerSchema, sanitizeText } from "@/utils/validation";
 import { z } from "zod";
+import { toast } from "sonner";
 
 interface AuthProps {
   mode?: "signin" | "signup";
@@ -93,6 +94,49 @@ const Auth: React.FC<AuthProps> = ({ mode = "signin" }) => {
         return "/";
       default:
         return "/";
+    }
+  };
+
+  const handleQuickLogin = async () => {
+    setError("");
+    setLoading(true);
+    
+    try {
+      // Quick demo login
+      const demoEmail = "demo@clinic.com";
+      const demoPassword = "demo123456";
+      
+      toast.info("جاري إنشاء حساب تجريبي...");
+      
+      // Try to register demo account first
+      try {
+        await register({
+          email: demoEmail,
+          password: demoPassword,
+          name: "د. أحمد التجريبي",
+          arabicName: "د. أحمد التجريبي",
+          phone: "07701234567",
+          province: "بغداد",
+          role: UserRole.DENTIST
+        });
+        toast.success("تم إنشاء الحساب التجريبي");
+      } catch (regError) {
+        // Account might already exist, try to login
+        console.log("Demo account might already exist, trying to login...");
+      }
+      
+      // Login with demo account
+      await login(demoEmail, demoPassword);
+      toast.success("تم تسجيل الدخول بنجاح!");
+      
+      // Redirect to dentist hub
+      navigate("/dentist-hub", { replace: true });
+    } catch (err) {
+      console.error("Quick login error:", err);
+      setError("حدث خطأ في تسجيل الدخول السريع");
+      toast.error("حدث خطأ في تسجيل الدخول السريع");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -330,6 +374,30 @@ const Auth: React.FC<AuthProps> = ({ mode = "signin" }) => {
               }
             </Button>
           </form>
+
+          {authMode === "signin" && (
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">أو</span>
+              </div>
+            </div>
+          )}
+
+          {authMode === "signin" && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleQuickLogin}
+              disabled={loading}
+            >
+              <Zap className="ml-2 h-4 w-4" />
+              تسجيل دخول سريع (تجريبي)
+            </Button>
+          )}
 
           <div className="text-center text-sm">
             {authMode === "signin" ? (
