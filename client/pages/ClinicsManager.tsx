@@ -22,10 +22,31 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { sharedClinicData, Clinic, ClinicStats, Staff } from "@/services/sharedClinicData";
+import { ClinicService, type ClinicData } from "@/services/clinicService";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import ClinicSettings from "./settings/ClinicSettings";
+
+interface Clinic {
+  id: string;
+  name: string;
+  name_ar: string;
+  address: string | null;
+  city: string | null;
+  phone: string | null;
+  email: string | null;
+  online_booking_enabled: boolean;
+  owner_id: string;
+}
+
+interface ClinicStats {
+  todayAppointments: number;
+  pendingAppointments: number;
+  completedToday: number;
+  totalPatients: number;
+  monthlyRevenue: number;
+  activeStaff: number;
+}
 
 type UIMode = "modern" | "legacy";
 type View = "dashboard" | "add" | "edit" | "reports" | "booking-settings" | "settings";
@@ -43,9 +64,15 @@ export default function ClinicsManager() {
 
   useEffect(() => {
     const loadClinics = async () => {
-      const data = await sharedClinicData.getClinics();
-      setClinics(data);
-      setLoading(false);
+      try {
+        const data = await ClinicService.getUserClinics();
+        setClinics(data as any);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading clinics:', error);
+        setClinics([]);
+        setLoading(false);
+      }
     };
     loadClinics();
   }, []);
@@ -115,7 +142,7 @@ export default function ClinicsManager() {
       // Create temporary link and trigger download
       const link = document.createElement('a');
       link.href = objectUrl;
-      link.download = `booking-qr-${clinic?.nameAr || clinicId}.png`;
+      link.download = `booking-qr-${clinic?.name_ar || clinicId}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -123,7 +150,7 @@ export default function ClinicsManager() {
       // Revoke object URL to free memory
       URL.revokeObjectURL(objectUrl);
       
-      toast.success(`تم تحميل رمز QR لعيادة ${clinic?.nameAr}`);
+      toast.success(`تم تحميل رمز QR لعيادة ${clinic?.name_ar}`);
     } catch (error) {
       toast.error("حدث خطأ أثناء تحميل رمز QR");
       console.error("QR download error:", error);
@@ -198,7 +225,7 @@ export default function ClinicsManager() {
                   <Building2 className="w-5 h-5 text-blue-600" />
                   <div className="flex-1 text-right">
                     <div className="text-sm font-medium text-gray-900">
-                      {selectedClinicId ? clinics.find(c => c.id === selectedClinicId)?.nameAr : "اختر عيادة"}
+                      {selectedClinicId ? clinics.find(c => c.id === selectedClinicId)?.name_ar : "اختر عيادة"}
                     </div>
                     <div className="text-xs text-gray-500">
                       {selectedClinicId ? clinics.find(c => c.id === selectedClinicId)?.address : "للانتقال السريع"}
@@ -222,7 +249,7 @@ export default function ClinicsManager() {
                           selectedClinicId === clinic.id && "bg-blue-50"
                         )}
                       >
-                        <div className="text-sm font-medium text-gray-900">{clinic.nameAr}</div>
+                        <div className="text-sm font-medium text-gray-900">{clinic.name_ar}</div>
                         <div className="text-xs text-gray-500">{clinic.address}</div>
                       </button>
                     ))}
@@ -370,11 +397,15 @@ function ClinicCard({
   const [stats, setStats] = useState<ClinicStats | null>(null);
 
   useEffect(() => {
-    const loadStats = async () => {
-      const data = await sharedClinicData.getClinicStats();
-      setStats(data);
-    };
-    loadStats();
+    // For now, use mock stats. In production, fetch from Supabase
+    setStats({
+      todayAppointments: 8,
+      pendingAppointments: 5,
+      completedToday: 3,
+      totalPatients: 45,
+      monthlyRevenue: 15000000,
+      activeStaff: 4,
+    });
   }, [clinic.id]);
 
   if (!stats) {
@@ -394,13 +425,13 @@ function ClinicCard({
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="text-lg font-semibold text-white mb-1">
-                          {clinic.nameAr}
+                          {clinic.name_ar}
                         </h3>
                         <p className="text-indigo-100 text-sm">
-                          {clinic.doctorName}
+                          {clinic.city || clinic.address}
                         </p>
                       </div>
-                      {clinic.onlineBookingEnabled && (
+                      {clinic.online_booking_enabled && (
                         <CheckCircle2 className="w-5 h-5 text-green-300" />
                       )}
                     </div>
@@ -505,25 +536,21 @@ function AddEditClinicForm({
   onBack: () => void;
 }) {
   const [formData, setFormData] = useState({
-    nameAr: clinic?.nameAr || "",
+    name_ar: clinic?.name_ar || "",
     name: clinic?.name || "",
     address: clinic?.address || "",
     city: clinic?.city || "",
     phone: clinic?.phone || "",
     email: clinic?.email || "",
-    doctorName: clinic?.doctorName || "",
-    specializations: clinic?.specializations?.join(", ") || "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Prepare clinic data
+    // Prepare clinic data for Supabase
     const clinicData = {
       ...formData,
-      specializations: formData.specializations.split(',').map(s => s.trim()).filter(Boolean),
-      onlineBookingEnabled: true,
-      doctorId: "current-doctor", // In real app, get from auth context
+      online_booking_enabled: true,
     };
 
     // For now, just log the data (real implementation would call actual service methods)
@@ -556,9 +583,9 @@ function AddEditClinicForm({
                 </label>
                 <input
                   type="text"
-                  value={formData.nameAr}
+                  value={formData.name_ar}
                   onChange={(e) =>
-                    setFormData({ ...formData, nameAr: e.target.value })
+                    setFormData({ ...formData, name_ar: e.target.value })
                   }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   required
@@ -632,37 +659,6 @@ function AddEditClinicForm({
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  اسم الطبيب
-                </label>
-                <input
-                  type="text"
-                  value={formData.doctorName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, doctorName: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  التخصصات (افصل بفاصلة)
-                </label>
-                <input
-                  type="text"
-                  value={formData.specializations}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      specializations: e.target.value,
-                    })
-                  }
-                  placeholder="تقويم أسنان, زراعة, تجميل"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                />
-              </div>
             </div>
 
             <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
@@ -688,11 +684,15 @@ function ReportsSection({ clinic, onBack }: { clinic: Clinic; onBack: () => void
   const [stats, setStats] = useState<ClinicStats | null>(null);
 
   useEffect(() => {
-    const loadStats = async () => {
-      const data = await sharedClinicData.getClinicStats();
-      setStats(data);
-    };
-    loadStats();
+    // For now, use mock stats. In production, fetch from Supabase
+    setStats({
+      todayAppointments: 8,
+      pendingAppointments: 5,
+      completedToday: 3,
+      totalPatients: 45,
+      monthlyRevenue: 15000000,
+      activeStaff: 4,
+    });
   }, [clinic.id]);
 
   if (!stats) {
@@ -715,7 +715,7 @@ function ReportsSection({ clinic, onBack }: { clinic: Clinic; onBack: () => void
             رجوع
           </button>
           <h1 className="text-2xl font-bold text-gray-900">
-            التقارير - {clinic.nameAr}
+            التقارير - {clinic.name_ar}
           </h1>
         </div>
 
@@ -782,7 +782,7 @@ function ReportsSection({ clinic, onBack }: { clinic: Clinic; onBack: () => void
 // Booking Settings Form Component
 function BookingSettingsForm({ clinic, onBack }: { clinic: Clinic; onBack: () => void }) {
   const [settings, setSettings] = useState({
-    onlineBookingEnabled: clinic.onlineBookingEnabled !== undefined ? clinic.onlineBookingEnabled : true,
+    onlineBookingEnabled: clinic.online_booking_enabled !== undefined ? clinic.online_booking_enabled : true,
     autoConfirm: false,
     requireDeposit: false,
     depositAmount: "",
@@ -816,7 +816,7 @@ function BookingSettingsForm({ clinic, onBack }: { clinic: Clinic; onBack: () =>
             رجوع
           </button>
           <h1 className="text-2xl font-bold text-gray-900">
-            إعدادات الحجز - {clinic.nameAr}
+            إعدادات الحجز - {clinic.name_ar}
           </h1>
         </div>
 
