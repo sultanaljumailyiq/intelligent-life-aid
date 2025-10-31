@@ -36,11 +36,14 @@ export function ClinicRoleSwitcherBar({
     if (clinicIdFromUrl && clinicIdFromUrl !== selectedClinicId) {
       setSelectedClinicId(clinicIdFromUrl);
     }
-    
-    if (selectedClinicId) {
+  }, [clinicsLoading, searchParams, selectedClinicId, setSelectedClinicId]);
+
+  // Load staff when clinic changes
+  useEffect(() => {
+    if (selectedClinicId && !clinicsLoading) {
       loadStaffForClinic(selectedClinicId);
     }
-  }, [selectedClinicId, clinicsLoading, searchParams]);
+  }, [selectedClinicId, clinicsLoading]);
 
   // Load staff when clinic changes
   const loadStaffForClinic = async (clinicId: string) => {
@@ -49,12 +52,19 @@ export function ClinicRoleSwitcherBar({
       const staff = await ClinicService.getClinicStaff(clinicId);
       setStaffList(staff || []);
 
+      // Auto-select first staff member or keep current selection if valid
       if (staff && staff.length > 0) {
-        setSelectedStaff(staff[0].id);
+        const currentStaffExists = staff.find(s => s.id === selectedStaff);
+        if (!currentStaffExists) {
+          setSelectedStaff(staff[0].id);
+        }
+      } else {
+        setSelectedStaff("");
       }
     } catch (error) {
       console.error("Failed to load staff:", error);
       setStaffList([]);
+      setSelectedStaff("");
     } finally {
       setIsLoadingStaff(false);
     }
@@ -77,11 +87,19 @@ export function ClinicRoleSwitcherBar({
     onStaffChange?.(staffId);
   };
 
-  // If no clinics available, show loading state
-  if (clinicsLoading && clinics.length === 0) {
+  // If no clinics available, show loading or empty state
+  if (clinicsLoading) {
     return (
-      <div className="bg-gradient-to-r from-teal-600 to-teal-700 text-white px-4 py-4 rounded-xl shadow-md">
+      <div className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground px-4 py-4 rounded-xl shadow-md">
         <div className="flex items-center gap-2 text-sm">جاري تحميل العيادات...</div>
+      </div>
+    );
+  }
+
+  if (clinics.length === 0) {
+    return (
+      <div className="bg-muted px-4 py-4 rounded-xl">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">لا توجد عيادات متاحة</div>
       </div>
     );
   }
@@ -139,7 +157,7 @@ export function ClinicRoleSwitcherBar({
         )}
 
         {/* Staff Section - Only for admins and managers */}
-        {canSwitchClinic && (
+        {canSwitchClinic && staffList.length > 0 && (
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 shrink-0" />
             <select
@@ -199,7 +217,7 @@ export function ClinicRoleSwitcherBar({
           {/* Staff Section */}
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-muted-foreground" />
-            {canSwitchClinic ? (
+            {canSwitchClinic && staffList.length > 0 ? (
               <select
                 value={selectedStaff}
                 onChange={handleStaffChange}
@@ -213,7 +231,7 @@ export function ClinicRoleSwitcherBar({
                 ))}
               </select>
             ) : (
-              <span className="text-sm font-medium">{selectedStaffObj?.name}</span>
+              <span className="text-sm font-medium">{selectedStaffObj?.name || 'لا يوجد موظفين'}</span>
             )}
           </div>
         </div>
