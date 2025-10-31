@@ -77,6 +77,81 @@ export type Database = {
           },
         ]
       }
+      booking_requests: {
+        Row: {
+          alternative_dates: Json | null
+          clinic_id: string
+          confirmed_appointment_id: string | null
+          confirmed_at: string | null
+          confirmed_by: string | null
+          created_at: string | null
+          id: string
+          message: string | null
+          patient_email: string | null
+          patient_name: string
+          patient_phone: string
+          preferred_date: string
+          preferred_time: string
+          rejection_reason: string | null
+          status: string | null
+          treatment_type: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          alternative_dates?: Json | null
+          clinic_id: string
+          confirmed_appointment_id?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          patient_email?: string | null
+          patient_name: string
+          patient_phone: string
+          preferred_date: string
+          preferred_time: string
+          rejection_reason?: string | null
+          status?: string | null
+          treatment_type?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          alternative_dates?: Json | null
+          clinic_id?: string
+          confirmed_appointment_id?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          patient_email?: string | null
+          patient_name?: string
+          patient_phone?: string
+          preferred_date?: string
+          preferred_time?: string
+          rejection_reason?: string | null
+          status?: string | null
+          treatment_type?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_requests_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_requests_confirmed_appointment_id_fkey"
+            columns: ["confirmed_appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brands: {
         Row: {
           arabic_description: string | null
@@ -213,6 +288,62 @@ export type Database = {
           },
         ]
       }
+      clinic_reviews: {
+        Row: {
+          clinic_id: string
+          comment: string | null
+          created_at: string | null
+          id: string
+          is_published: boolean | null
+          is_verified: boolean | null
+          rating: number
+          recommend: boolean | null
+          title: string | null
+          treatment_received: string | null
+          updated_at: string | null
+          user_id: string
+          visit_date: string | null
+        }
+        Insert: {
+          clinic_id: string
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          is_published?: boolean | null
+          is_verified?: boolean | null
+          rating: number
+          recommend?: boolean | null
+          title?: string | null
+          treatment_received?: string | null
+          updated_at?: string | null
+          user_id: string
+          visit_date?: string | null
+        }
+        Update: {
+          clinic_id?: string
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          is_published?: boolean | null
+          is_verified?: boolean | null
+          rating?: number
+          recommend?: boolean | null
+          title?: string | null
+          treatment_received?: string | null
+          updated_at?: string | null
+          user_id?: string
+          visit_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_reviews_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinic_staff: {
         Row: {
           clinic_id: string
@@ -343,6 +474,345 @@ export type Database = {
           },
         ]
       }
+      community_comments: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string | null
+          id: string
+          is_approved: boolean | null
+          like_count: number | null
+          parent_comment_id: string | null
+          post_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string | null
+          id?: string
+          is_approved?: boolean | null
+          like_count?: number | null
+          parent_comment_id?: string | null
+          post_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_approved?: boolean | null
+          like_count?: number | null
+          parent_comment_id?: string | null
+          post_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "community_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_courses: {
+        Row: {
+          arabic_description: string | null
+          arabic_title: string
+          category: string | null
+          cover_image: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          duration: string | null
+          end_date: string | null
+          enrollment_count: number | null
+          id: string
+          instructor: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          level: string | null
+          price: number | null
+          rating: number | null
+          review_count: number | null
+          start_date: string | null
+          tags: Json | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          arabic_description?: string | null
+          arabic_title: string
+          category?: string | null
+          cover_image?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          duration?: string | null
+          end_date?: string | null
+          enrollment_count?: number | null
+          id?: string
+          instructor: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          level?: string | null
+          price?: number | null
+          rating?: number | null
+          review_count?: number | null
+          start_date?: string | null
+          tags?: Json | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          arabic_description?: string | null
+          arabic_title?: string
+          category?: string | null
+          cover_image?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          duration?: string | null
+          end_date?: string | null
+          enrollment_count?: number | null
+          id?: string
+          instructor?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          level?: string | null
+          price?: number | null
+          rating?: number | null
+          review_count?: number | null
+          start_date?: string | null
+          tags?: Json | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      community_educational_content: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          arabic_content: string
+          arabic_title: string
+          author_id: string
+          category: string | null
+          comment_count: number | null
+          content: string
+          content_type: string | null
+          cover_image: string | null
+          created_at: string | null
+          id: string
+          images: Json | null
+          is_approved: boolean | null
+          is_featured: boolean | null
+          is_pinned: boolean | null
+          like_count: number | null
+          published_at: string | null
+          status: string | null
+          tags: Json | null
+          title: string
+          updated_at: string | null
+          view_count: number | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          arabic_content: string
+          arabic_title: string
+          author_id: string
+          category?: string | null
+          comment_count?: number | null
+          content: string
+          content_type?: string | null
+          cover_image?: string | null
+          created_at?: string | null
+          id?: string
+          images?: Json | null
+          is_approved?: boolean | null
+          is_featured?: boolean | null
+          is_pinned?: boolean | null
+          like_count?: number | null
+          published_at?: string | null
+          status?: string | null
+          tags?: Json | null
+          title: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          arabic_content?: string
+          arabic_title?: string
+          author_id?: string
+          category?: string | null
+          comment_count?: number | null
+          content?: string
+          content_type?: string | null
+          cover_image?: string | null
+          created_at?: string | null
+          id?: string
+          images?: Json | null
+          is_approved?: boolean | null
+          is_featured?: boolean | null
+          is_pinned?: boolean | null
+          like_count?: number | null
+          published_at?: string | null
+          status?: string | null
+          tags?: Json | null
+          title?: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Relationships: []
+      }
+      community_events: {
+        Row: {
+          arabic_description: string | null
+          arabic_title: string
+          cover_image: string | null
+          created_at: string | null
+          created_by: string | null
+          current_attendees: number | null
+          description: string | null
+          duration: number | null
+          end_date: string
+          event_type: string | null
+          external_url: string | null
+          id: string
+          is_external: boolean | null
+          is_free: boolean | null
+          max_attendees: number | null
+          meeting_link: string | null
+          price: number | null
+          speaker_bio: string | null
+          speaker_image: string | null
+          speaker_name: string | null
+          start_date: string
+          status: string | null
+          tags: Json | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          arabic_description?: string | null
+          arabic_title: string
+          cover_image?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          current_attendees?: number | null
+          description?: string | null
+          duration?: number | null
+          end_date: string
+          event_type?: string | null
+          external_url?: string | null
+          id?: string
+          is_external?: boolean | null
+          is_free?: boolean | null
+          max_attendees?: number | null
+          meeting_link?: string | null
+          price?: number | null
+          speaker_bio?: string | null
+          speaker_image?: string | null
+          speaker_name?: string | null
+          start_date: string
+          status?: string | null
+          tags?: Json | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          arabic_description?: string | null
+          arabic_title?: string
+          cover_image?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          current_attendees?: number | null
+          description?: string | null
+          duration?: number | null
+          end_date?: string
+          event_type?: string | null
+          external_url?: string | null
+          id?: string
+          is_external?: boolean | null
+          is_free?: boolean | null
+          max_attendees?: number | null
+          meeting_link?: string | null
+          price?: number | null
+          speaker_bio?: string | null
+          speaker_image?: string | null
+          speaker_name?: string | null
+          start_date?: string
+          status?: string | null
+          tags?: Json | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      community_posts: {
+        Row: {
+          author_id: string
+          comment_count: number | null
+          content: string
+          created_at: string | null
+          id: string
+          images: Json | null
+          is_approved: boolean | null
+          is_pinned: boolean | null
+          like_count: number | null
+          post_type: string | null
+          share_count: number | null
+          updated_at: string | null
+          view_count: number | null
+          visibility: string | null
+        }
+        Insert: {
+          author_id: string
+          comment_count?: number | null
+          content: string
+          created_at?: string | null
+          id?: string
+          images?: Json | null
+          is_approved?: boolean | null
+          is_pinned?: boolean | null
+          like_count?: number | null
+          post_type?: string | null
+          share_count?: number | null
+          updated_at?: string | null
+          view_count?: number | null
+          visibility?: string | null
+        }
+        Update: {
+          author_id?: string
+          comment_count?: number | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          images?: Json | null
+          is_approved?: boolean | null
+          is_pinned?: boolean | null
+          like_count?: number | null
+          post_type?: string | null
+          share_count?: number | null
+          updated_at?: string | null
+          view_count?: number | null
+          visibility?: string | null
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string | null
@@ -399,6 +869,324 @@ export type Database = {
           name_ar?: string
           name_en?: string
           region?: string | null
+        }
+        Relationships: []
+      }
+      job_applications: {
+        Row: {
+          applicant_id: string
+          cover_letter: string | null
+          created_at: string | null
+          id: string
+          job_id: string
+          notes: string | null
+          resume_url: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          applicant_id: string
+          cover_letter?: string | null
+          created_at?: string | null
+          id?: string
+          job_id: string
+          notes?: string | null
+          resume_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          applicant_id?: string
+          cover_letter?: string | null
+          created_at?: string | null
+          id?: string
+          job_id?: string
+          notes?: string | null
+          resume_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          application_count: number | null
+          application_deadline: string | null
+          arabic_description: string
+          arabic_title: string
+          benefits: Json | null
+          clinic_id: string | null
+          created_at: string | null
+          description: string
+          employer_id: string | null
+          experience_required: number | null
+          governorate: string | null
+          id: string
+          is_featured: boolean | null
+          job_type: string
+          location: string | null
+          qualifications: Json | null
+          requirements: Json | null
+          salary_max: number | null
+          salary_min: number | null
+          status: string | null
+          title: string
+          updated_at: string | null
+          view_count: number | null
+        }
+        Insert: {
+          application_count?: number | null
+          application_deadline?: string | null
+          arabic_description: string
+          arabic_title: string
+          benefits?: Json | null
+          clinic_id?: string | null
+          created_at?: string | null
+          description: string
+          employer_id?: string | null
+          experience_required?: number | null
+          governorate?: string | null
+          id?: string
+          is_featured?: boolean | null
+          job_type: string
+          location?: string | null
+          qualifications?: Json | null
+          requirements?: Json | null
+          salary_max?: number | null
+          salary_min?: number | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          application_count?: number | null
+          application_deadline?: string | null
+          arabic_description?: string
+          arabic_title?: string
+          benefits?: Json | null
+          clinic_id?: string | null
+          created_at?: string | null
+          description?: string
+          employer_id?: string | null
+          experience_required?: number | null
+          governorate?: string | null
+          id?: string
+          is_featured?: boolean | null
+          job_type?: string
+          location?: string | null
+          qualifications?: Json | null
+          requirements?: Json | null
+          salary_max?: number | null
+          salary_min?: number | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_orders: {
+        Row: {
+          actual_cost: number | null
+          attachments: Json | null
+          clinic_id: string
+          completed_date: string | null
+          created_at: string | null
+          delivered_date: string | null
+          description: string | null
+          estimated_cost: number | null
+          expected_date: string | null
+          id: string
+          lab_id: string
+          notes: string | null
+          order_number: string
+          order_type: string
+          ordered_date: string
+          patient_id: string
+          rush_order: boolean | null
+          specifications: Json | null
+          status: string | null
+          treatment_plan_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          actual_cost?: number | null
+          attachments?: Json | null
+          clinic_id: string
+          completed_date?: string | null
+          created_at?: string | null
+          delivered_date?: string | null
+          description?: string | null
+          estimated_cost?: number | null
+          expected_date?: string | null
+          id?: string
+          lab_id: string
+          notes?: string | null
+          order_number: string
+          order_type: string
+          ordered_date: string
+          patient_id: string
+          rush_order?: boolean | null
+          specifications?: Json | null
+          status?: string | null
+          treatment_plan_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          actual_cost?: number | null
+          attachments?: Json | null
+          clinic_id?: string
+          completed_date?: string | null
+          created_at?: string | null
+          delivered_date?: string | null
+          description?: string | null
+          estimated_cost?: number | null
+          expected_date?: string | null
+          id?: string
+          lab_id?: string
+          notes?: string | null
+          order_number?: string
+          order_type?: string
+          ordered_date?: string
+          patient_id?: string
+          rush_order?: boolean | null
+          specifications?: Json | null
+          status?: string | null
+          treatment_plan_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_orders_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_orders_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_orders_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_orders_treatment_plan_id_fkey"
+            columns: ["treatment_plan_id"]
+            isOneToOne: false
+            referencedRelation: "treatment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      labs: {
+        Row: {
+          address: string
+          arabic_description: string | null
+          arabic_name: string
+          city: string
+          created_at: string | null
+          description: string | null
+          email: string | null
+          governorate: string
+          id: string
+          images: Json | null
+          is_active: boolean | null
+          is_verified: boolean | null
+          location_lat: number | null
+          location_lng: number | null
+          logo: string | null
+          name: string
+          phone: string
+          rating: number | null
+          review_count: number | null
+          services: Json | null
+          specializations: Json | null
+          updated_at: string | null
+          user_id: string | null
+          working_hours: Json | null
+        }
+        Insert: {
+          address: string
+          arabic_description?: string | null
+          arabic_name: string
+          city: string
+          created_at?: string | null
+          description?: string | null
+          email?: string | null
+          governorate: string
+          id?: string
+          images?: Json | null
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          location_lat?: number | null
+          location_lng?: number | null
+          logo?: string | null
+          name: string
+          phone: string
+          rating?: number | null
+          review_count?: number | null
+          services?: Json | null
+          specializations?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+          working_hours?: Json | null
+        }
+        Update: {
+          address?: string
+          arabic_description?: string | null
+          arabic_name?: string
+          city?: string
+          created_at?: string | null
+          description?: string | null
+          email?: string | null
+          governorate?: string
+          id?: string
+          images?: Json | null
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          location_lat?: number | null
+          location_lng?: number | null
+          logo?: string | null
+          name?: string
+          phone?: string
+          rating?: number | null
+          review_count?: number | null
+          services?: Json | null
+          specializations?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+          working_hours?: Json | null
         }
         Relationships: []
       }
@@ -696,6 +1484,69 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      patient_medical_records: {
+        Row: {
+          clinic_id: string
+          created_at: string | null
+          description: string | null
+          documents: Json | null
+          findings: string | null
+          id: string
+          images: Json | null
+          patient_id: string
+          record_date: string
+          record_type: string
+          recorded_by: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string | null
+          description?: string | null
+          documents?: Json | null
+          findings?: string | null
+          id?: string
+          images?: Json | null
+          patient_id: string
+          record_date: string
+          record_type: string
+          recorded_by?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string | null
+          description?: string | null
+          documents?: Json | null
+          findings?: string | null
+          id?: string
+          images?: Json | null
+          patient_id?: string
+          record_date?: string
+          record_type?: string
+          recorded_by?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_medical_records_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_medical_records_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       patients: {
         Row: {
@@ -1097,6 +1948,89 @@ export type Database = {
           },
         ]
       }
+      subscription_payments: {
+        Row: {
+          activated_at: string | null
+          amount: number
+          attachments: Json | null
+          clinic_id: string
+          created_at: string | null
+          deposit_receipt_number: string | null
+          duration: number
+          exchange_office_name: string | null
+          expires_at: string | null
+          id: string
+          payment_method: string
+          payment_number: string
+          sender_name: string | null
+          status: string | null
+          subscription_type: string
+          updated_at: string | null
+          user_id: string
+          verification_status: string | null
+          verified_at: string | null
+          verified_by: string | null
+          zain_cash_phone_number: string | null
+          zain_cash_transaction_ref: string | null
+        }
+        Insert: {
+          activated_at?: string | null
+          amount: number
+          attachments?: Json | null
+          clinic_id: string
+          created_at?: string | null
+          deposit_receipt_number?: string | null
+          duration: number
+          exchange_office_name?: string | null
+          expires_at?: string | null
+          id?: string
+          payment_method: string
+          payment_number: string
+          sender_name?: string | null
+          status?: string | null
+          subscription_type: string
+          updated_at?: string | null
+          user_id: string
+          verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+          zain_cash_phone_number?: string | null
+          zain_cash_transaction_ref?: string | null
+        }
+        Update: {
+          activated_at?: string | null
+          amount?: number
+          attachments?: Json | null
+          clinic_id?: string
+          created_at?: string | null
+          deposit_receipt_number?: string | null
+          duration?: number
+          exchange_office_name?: string | null
+          expires_at?: string | null
+          id?: string
+          payment_method?: string
+          payment_number?: string
+          sender_name?: string | null
+          status?: string | null
+          subscription_type?: string
+          updated_at?: string | null
+          user_id?: string
+          verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+          zain_cash_phone_number?: string | null
+          zain_cash_transaction_ref?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_payments_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_analytics: {
         Row: {
           created_at: string | null
@@ -1346,6 +2280,143 @@ export type Database = {
           whatsapp?: string | null
         }
         Relationships: []
+      }
+      treatment_plans: {
+        Row: {
+          actual_cost: number | null
+          attachments: Json | null
+          clinic_id: string
+          completed_at: string | null
+          created_at: string | null
+          description: string | null
+          diagnosis: string | null
+          doctor_id: string
+          end_date: string | null
+          estimated_cost: number | null
+          id: string
+          notes: string | null
+          patient_id: string
+          procedures: Json | null
+          start_date: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          actual_cost?: number | null
+          attachments?: Json | null
+          clinic_id: string
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          diagnosis?: string | null
+          doctor_id: string
+          end_date?: string | null
+          estimated_cost?: number | null
+          id?: string
+          notes?: string | null
+          patient_id: string
+          procedures?: Json | null
+          start_date?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          actual_cost?: number | null
+          attachments?: Json | null
+          clinic_id?: string
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          diagnosis?: string | null
+          doctor_id?: string
+          end_date?: string | null
+          estimated_cost?: number | null
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          procedures?: Json | null
+          start_date?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "treatment_plans_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treatment_plans_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      treatment_procedures: {
+        Row: {
+          completed_date: string | null
+          cost: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          notes: string | null
+          performed_by: string | null
+          procedure_code: string | null
+          procedure_name: string
+          scheduled_date: string | null
+          status: string | null
+          tooth_number: string | null
+          treatment_plan_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          completed_date?: string | null
+          cost?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          notes?: string | null
+          performed_by?: string | null
+          procedure_code?: string | null
+          procedure_name: string
+          scheduled_date?: string | null
+          status?: string | null
+          tooth_number?: string | null
+          treatment_plan_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          completed_date?: string | null
+          cost?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          notes?: string | null
+          performed_by?: string | null
+          procedure_code?: string | null
+          procedure_name?: string
+          scheduled_date?: string | null
+          status?: string | null
+          tooth_number?: string | null
+          treatment_plan_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "treatment_procedures_treatment_plan_id_fkey"
+            columns: ["treatment_plan_id"]
+            isOneToOne: false
+            referencedRelation: "treatment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
