@@ -582,7 +582,7 @@ export default function DentistHub() {
       <div className="bg-white rounded-2xl border border-gray-100 p-4 md:p-6">
         <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
           <Activity className="w-5 h-5 text-blue-500" />
-          الإحصائيات الرئيسية - {selectedClinic?.nameAr || "العيادة"}
+          الإحصائيات الرئيسية - {selectedClinic?.name_ar || "العيادة"}
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <StatWidget 
