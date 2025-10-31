@@ -83,11 +83,22 @@ export function ClinicRoleSwitcherBar({
     onStaffChange?.(staffId);
   };
 
-  // If no clinics available, show loading state
-  if (clinicsLoading && clinics.length === 0) {
+  // If no clinics available, show message
+  if (clinicsLoading) {
     return (
-      <div className="bg-gradient-to-r from-teal-600 to-teal-700 text-white px-4 py-4 rounded-xl shadow-md">
+      <div className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground px-4 py-2.5 flex items-center justify-center shadow-sm" dir="rtl">
         <div className="flex items-center gap-2 text-sm">جاري تحميل العيادات...</div>
+      </div>
+    );
+  }
+
+  if (clinics.length === 0) {
+    return (
+      <div className="bg-muted/50 border-b border-border px-4 py-2.5 flex items-center justify-center" dir="rtl">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <AlertCircle className="w-4 h-4" />
+          <span>لا توجد عيادات مسجلة. يرجى إضافة عيادة أولاً.</span>
+        </div>
       </div>
     );
   }
@@ -108,14 +119,14 @@ export function ClinicRoleSwitcherBar({
   const selectedClinicObj = clinics.find((c) => c.id === selectedClinicId);
   const selectedStaffObj = staffList.find((s) => s.id === selectedStaff);
 
-  // Check if user is platform admin or clinic manager
+  // Check if user is platform admin, clinic owner, or clinic manager
   const isPlatformAdmin = hasRole(UserRole.PLATFORM_ADMIN);
   const isDentist = hasRole(UserRole.DENTIST);
+  const isClinicOwner = selectedClinicObj?.owner_id === user?.id;
   const isClinicManager = selectedStaffObj?.role === "manager";
   
-  // Platform admins and dentists (clinic owners) can switch
-  // Regular staff cannot switch clinics
-  const canSwitchClinic = isPlatformAdmin || isDentist || isClinicManager;
+  // Platform admins, dentists (clinic owners), and actual clinic owners can switch
+  const canSwitchClinic = isPlatformAdmin || isDentist || isClinicOwner || isClinicManager;
 
   if (variant === "compact") {
     return (
