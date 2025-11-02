@@ -102,35 +102,36 @@ const Auth: React.FC<AuthProps> = ({ mode = "signin" }) => {
     setLoading(true);
     
     try {
-      // Quick demo login
       const demoEmail = "demo@clinic.com";
       const demoPassword = "demo123456";
       
-      toast.info("جاري إنشاء حساب تجريبي...");
+      toast.info("جاري تسجيل الدخول...");
       
-      // Try to register demo account first
+      // Try to sign in first
       try {
+        await login(demoEmail, demoPassword);
+        toast.success("تم تسجيل الدخول بنجاح!");
+        navigate("/dentist-hub", { replace: true });
+      } catch (loginError) {
+        // If login failed (user doesn't exist), create account
+        console.log("Demo user doesn't exist, creating account...");
+        toast.info("جاري إنشاء حساب تجريبي...");
+        
         await register({
           email: demoEmail,
           password: demoPassword,
-          name: "د. أحمد التجريبي",
-          arabicName: "د. أحمد التجريبي",
-          phone: "07701234567",
+          name: "د. أحمد محمد",
+          arabicName: "د. أحمد محمد",
+          phone: "07901234567",
           province: "بغداد",
           role: UserRole.DENTIST
         });
-        toast.success("تم إنشاء الحساب التجريبي");
-      } catch (regError) {
-        // Account might already exist, try to login
-        console.log("Demo account might already exist, trying to login...");
+        
+        // Try login again after registration
+        await login(demoEmail, demoPassword);
+        toast.success("تم تسجيل الدخول بنجاح!");
+        navigate("/dentist-hub", { replace: true });
       }
-      
-      // Login with demo account
-      await login(demoEmail, demoPassword);
-      toast.success("تم تسجيل الدخول بنجاح!");
-      
-      // Redirect to dentist hub
-      navigate("/dentist-hub", { replace: true });
     } catch (err) {
       console.error("Quick login error:", err);
       setError("حدث خطأ في تسجيل الدخول السريع");

@@ -56,12 +56,14 @@ export function ClinicRoleSwitcherBar({
   const loadStaffForClinic = async (clinicId: string) => {
     try {
       setIsLoadingStaff(true);
+      console.log('Loading staff for clinic:', clinicId);
       const staff = await ClinicService.getClinicStaff(clinicId);
       console.log('Loaded staff:', staff);
       setStaffList(staff || []);
 
       // Auto-select first staff member if available and none selected
       if (staff && staff.length > 0 && !selectedStaff) {
+        console.log('Auto-selecting first staff:', staff[0].id);
         setSelectedStaff(staff[0].id);
         onStaffChange?.(staff[0].id);
       }

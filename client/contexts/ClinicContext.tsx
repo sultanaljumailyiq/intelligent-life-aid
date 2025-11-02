@@ -20,16 +20,20 @@ export const ClinicProvider = ({ children }: { children: ReactNode }) => {
   const loadClinics = async () => {
     try {
       setLoading(true);
+      console.log('Loading clinics...');
       const data = await ClinicService.getUserClinics();
+      console.log('Loaded clinics:', data);
       setClinics(data);
       
       // Auto-select first clinic if available and none selected
       if (data.length > 0 && !selectedClinicId) {
+        console.log('Auto-selecting first clinic:', data[0].id);
         setSelectedClinicId(data[0].id);
       }
       
       // If selected clinic is no longer available, select first one
       if (selectedClinicId && !data.find(c => c.id === selectedClinicId)) {
+        console.log('Selected clinic not found, selecting first one');
         setSelectedClinicId(data.length > 0 ? data[0].id : null);
       }
     } catch (error) {
