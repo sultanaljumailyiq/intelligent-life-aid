@@ -1723,10 +1723,64 @@ class SharedClinicDataService {
 
   // Clinic management methods
   async getClinics(): Promise<Clinic[]> {
+    // Import ClinicService dynamically to avoid circular dependency
+    const { ClinicService } = await import('./clinicService');
+    const supabaseClinics = await ClinicService.getUserClinics();
+    
+    // If we have data from Supabase, use it
+    if (supabaseClinics && supabaseClinics.length > 0) {
+      // Map to our Clinic interface
+      return supabaseClinics.map(sc => ({
+        id: sc.id,
+        name: sc.name,
+        nameAr: sc.name_ar,
+        address: sc.address || '',
+        city: sc.city || '',
+        phone: sc.phone || '',
+        email: sc.email || '',
+        doctorId: sc.owner_id,
+        doctorName: 'د. صاحب العيادة', // Default doctor name
+        specializations: ['طب الأسنان العام'], // Default specializations
+        onlineBookingEnabled: sc.online_booking_enabled || false,
+        bookingLink: `/simplified-booking/${sc.id}`,
+        workingHours: sc.working_hours || {},
+        timeSlotDuration: 30,
+        breakTimes: [],
+        acceptedTreatments: []
+      }));
+    }
+    
+    // Fallback to mock data if Supabase is empty
     return [...this.clinics];
   }
 
   async getClinic(clinicId: string): Promise<Clinic | null> {
+    // Try to get from Supabase first
+    const { ClinicService } = await import('./clinicService');
+    const supabaseClinic = await ClinicService.getClinicById(clinicId);
+    
+    if (supabaseClinic) {
+      return {
+        id: supabaseClinic.id,
+        name: supabaseClinic.name,
+        nameAr: supabaseClinic.name_ar,
+        address: supabaseClinic.address || '',
+        city: supabaseClinic.city || '',
+        phone: supabaseClinic.phone || '',
+        email: supabaseClinic.email || '',
+        doctorId: supabaseClinic.owner_id,
+        doctorName: 'د. صاحب العيادة',
+        specializations: ['طب الأسنان العام'],
+        onlineBookingEnabled: supabaseClinic.online_booking_enabled || false,
+        bookingLink: `/simplified-booking/${supabaseClinic.id}`,
+        workingHours: supabaseClinic.working_hours || {},
+        timeSlotDuration: 30,
+        breakTimes: [],
+        acceptedTreatments: []
+      };
+    }
+    
+    // Fallback to mock data
     return this.clinics.find((c) => c.id === clinicId) || null;
   }
 
