@@ -518,17 +518,29 @@ function AddEditClinicForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Prepare clinic data
-    const clinicData = {
-      ...formData,
-      specializations: formData.specializations.split(',').map(s => s.trim()).filter(Boolean),
-      onlineBookingEnabled: true,
-      doctorId: "current-doctor", // In real app, get from auth context
-    };
+    try {
+      // Prepare clinic data
+      const clinicData = {
+        ...formData,
+        specializations: formData.specializations.split(',').map(s => s.trim()).filter(Boolean),
+        onlineBookingEnabled: true,
+        doctorId: "current-doctor",
+      };
 
-    // For now, just log the data (real implementation would call actual service methods)
-    console.log(clinic ? "Updating clinic:" : "Creating clinic:", clinicData);
-    onBack();
+      if (clinic) {
+        await sharedClinicData.updateClinic(clinic.id, clinicData);
+        toast.success("تم تحديث بيانات العيادة بنجاح");
+      } else {
+        await sharedClinicData.addClinic(clinicData);
+        toast.success("تم إضافة العيادة بنجاح");
+      }
+      
+      // Reload and go back
+      window.location.reload();
+    } catch (error) {
+      console.error("Error saving clinic:", error);
+      toast.error("حدث خطأ أثناء حفظ البيانات");
+    }
   };
 
   return (
