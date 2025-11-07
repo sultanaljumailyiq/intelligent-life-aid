@@ -111,6 +111,7 @@ const PlatformSettings = lazy(() => import("./pages/admin/PlatformSettings"));
 const CommunityAdminSettings = lazy(() => import("./pages/CommunityAdminSettings"));
 const Articles = lazy(() => import("./pages/Articles"));
 const ArticleDetail = lazy(() => import("./pages/ArticleDetail"));
+const NotificationsDemo = lazy(() => import("./pages/NotificationsDemo"));
 
 // Lazy load AI and education pages  
 const Education = lazy(() => import("./pages/Education"));
@@ -141,6 +142,7 @@ import TasksReminders from "./pages/TasksReminders";
 import PatientLandingPage from "./pages/PatientLandingPage";
 // Lazy load admin and enhanced pages
 const AdminArticles = lazy(() => import("./pages/AdminArticles"));
+const EnhancedTestPage = lazy(() => import("./pages/EnhancedTestPage"));
 const EnhancedClinicDashboard = lazy(() => import("./pages/EnhancedClinicDashboard"));
 const PatientDetailsPage = lazy(() => import("./pages/PatientDetailsPage"));
 const AdminClinicDashboard = lazy(() => import("./pages/AdminClinicDashboard"));
@@ -173,6 +175,8 @@ import MapsSettings from "./pages/settings/MapsSettings";
 import ClinicsManagement from "./pages/settings/ClinicsManagement";
 import DoctorSubscription from "./pages/DoctorSubscriptionEnhanced";
 import DoctorSubscriptionSuccess from "./pages/DoctorSubscriptionSuccess";
+import TestPaymentMethods from "./pages/TestPaymentMethods";
+import TestPaymentStep from "./pages/TestPaymentStep";
 import SubscriptionManagement from "./pages/settings/SubscriptionManagement";
 import SubscriptionRequests from "./pages/settings/SubscriptionRequests";
 import CashAgentsManagement from "./pages/settings/CashAgentsManagement";
@@ -296,6 +300,7 @@ const App = () => {
                               path="/articles/:id"
                               element={<ArticleDetail />}
                             />
+                            <Route path="/notifications-demo" element={<NotificationsDemo />} />
                             <Route
                               path="/admin/articles"
                               element={<AdminArticles />}
@@ -1019,6 +1024,12 @@ const App = () => {
                             />
                             <Route path="/messages" element={<Messages />} />
 
+                            {/* Enhanced Test Page */}
+                            <Route
+                              path="/test-enhanced"
+                              element={<EnhancedTestPage />}
+                            />
+
                             {/* Settings Routes - مسارات الإعدادات */}
                             <Route
                               path="/settings/maps"
@@ -1063,6 +1074,14 @@ const App = () => {
                             <Route
                               path="/doctor/subscription/success"
                               element={<DoctorSubscriptionSuccess />}
+                            />
+                            <Route
+                              path="/test-payment-methods"
+                              element={<TestPaymentMethods />}
+                            />
+                            <Route
+                              path="/test-payment-step"
+                              element={<TestPaymentStep />}
                             />
 
                             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
